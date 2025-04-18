@@ -1,9 +1,9 @@
 'use client';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { useExpense } from '../../context/ExpenseContext';
-import ExpenseMenu from '../menu/ExpenseMenu';
-import { inputStyle } from '../../styles/inputStyles';
+import { db } from '@/lib/firebase';
+import { useExpense } from '@/context/ExpenseContext';
+import ExpenseMenu from '@/components/Menu/ExpenseMenu';
+import { inputStyle } from '@/styles/inputStyles';
 
 interface ExpenseInputProps {
   day: number;
@@ -63,13 +63,13 @@ export default function ExpenseInput({
       <div className="relative">
         <input
           type={isMemo ? 'text' : 'number'}
-          className={inputStyle}
+          className={`${inputStyle} w-30`}
           placeholder={isMemo ? 'メモ' : '¥'}
           value={(amounts[docId] || '').toString()}
           onChange={(e) => handleChange(e.target.value)}
           onBlur={(e) => handleBlur(e.target.value)}
         />
-        {!isMemo && (
+        {!isMemo && amounts[docId] != 0 && amounts[docId] != undefined && (
           <ExpenseMenu
             currentAmount={amounts[docId] || 0}
             docId={docId}

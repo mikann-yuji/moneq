@@ -1,9 +1,9 @@
 'use client';
 import { useEffect } from 'react';
-import { useExpense } from '../../context/ExpenseContext';
+import { useExpense } from '@/context/ExpenseContext';
 import ExpenseInput from './ExpenseInput';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '@/lib/firebase';
 
 export default function ExpenseTable() {
   const { selectedYear, selectedMonth, amounts, setAmount } = useExpense();

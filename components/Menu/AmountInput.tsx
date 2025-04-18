@@ -1,6 +1,7 @@
 'use client';
 import { useRef, useEffect } from 'react';
-import { useExpense } from '@/app/context/ExpenseContext';
+import { useExpense } from '@/context/ExpenseContext';
+import { Mode } from '@/constants/modes';
 
 interface AmountInputProps {
   value: string;
@@ -8,9 +9,10 @@ interface AmountInputProps {
   onClose: () => void;
   currentAmount: number;
   docId: string;
+  mode: Mode | null;
 }
 
-export default function AmountInput({ value, onChange, onClose, currentAmount, docId }: AmountInputProps) {
+export default function AmountInput({ value, onChange, onClose, currentAmount, docId, mode }: AmountInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { updateAmount } = useExpense();
 
@@ -25,7 +27,13 @@ export default function AmountInput({ value, onChange, onClose, currentAmount, d
     
     try {
       const newAmount = parseInt(value) || 0;
-      const totalAmount = currentAmount + newAmount;
+      let totalAmount = currentAmount;
+
+      if (mode === Mode.ADD) {
+        totalAmount += newAmount;
+      } else if (mode === Mode.SUBTRACT) {
+        totalAmount -= newAmount;
+      }
 
       await updateAmount(docId, totalAmount);
       console.log('金額を更新しました:', totalAmount);

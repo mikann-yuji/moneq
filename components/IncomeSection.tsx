@@ -1,5 +1,5 @@
 'use client';
-import { inputStyle } from '../styles/inputStyles';
+import { inputStyle } from '@/styles/inputStyles';
 
 export default function IncomeSection() {
   return (
