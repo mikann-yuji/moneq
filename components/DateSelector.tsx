@@ -1,5 +1,5 @@
 'use client';
-import { useExpense } from '../context/ExpenseContext';
+import { useExpense } from '@/context/ExpenseContext';
 
 export default function DateSelector() {
   const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useExpense();

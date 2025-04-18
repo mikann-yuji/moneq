@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import AmountInput from './AmountInput';
+import { Mode } from '@/constants/modes';
 
 interface ExpenseMenuProps {
   currentAmount: number;
@@ -13,6 +14,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isInputMode, setIsInputMode] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [mode, setMode] = useState<Mode | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const menuItemStyle = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer";
@@ -48,6 +50,13 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
   const handleAddAmountClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsInputMode(true);
+    setMode(Mode.ADD);
+  };
+
+  const handleSubtractAmountClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setIsInputMode(true);
+    setMode(Mode.SUBTRACT);
   };
 
   const handleInputChange = (value: string) => {
@@ -89,9 +98,10 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
                   onClose={handleClose}
                   currentAmount={currentAmount}
                   docId={docId}
+                  mode={mode}
                 />
               ) : (
-                <>
+                <div>
                   <button
                     className={menuItemStyle}
                     onClick={handleAddAmountClick}
@@ -100,10 +110,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
                   </button>
                   <button
                     className={menuItemStyle}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      /* 金額を引く処理 */
-                    }}
+                    onClick={handleSubtractAmountClick}
                   >
                     金額を引く
                   </button>
@@ -116,7 +123,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
                   >
                     詳細
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>,
