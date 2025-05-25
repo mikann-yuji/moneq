@@ -59,7 +59,7 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
       selectedYear,
       setSelectedYear,
       selectedMonth,
-      setSelectedMonth
+      setSelectedMonth,
     }}>
       {children}
     </ExpenseContext.Provider>

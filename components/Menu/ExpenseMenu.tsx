@@ -3,6 +3,10 @@ import { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import AmountInput from './AmountInput';
 import { Mode } from '@/constants/modes';
+import { ExpenseMenuMode } from '@/constants/expenseMenuModes';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { format } from 'date-fns';
 
 interface ExpenseMenuProps {
   currentAmount: number;
@@ -12,9 +16,10 @@ interface ExpenseMenuProps {
 export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) {
   const [isActive, setIsActive] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-  const [isInputMode, setIsInputMode] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [mode, setMode] = useState<Mode | null>(null);
+  const [expenseMenuMode, setExpenseMenuMode] = useState<ExpenseMenuMode>(ExpenseMenuMode.DEFAULT);
+  const [details, setDetails] = useState<any[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const menuItemStyle = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer";
@@ -23,7 +28,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsActive(false);
-        setIsInputMode(false);
+        setExpenseMenuMode(ExpenseMenuMode.DEFAULT);
       }
     };
 
@@ -44,18 +49,18 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
       left: rect.right + 8,
     });
     setIsActive(!isActive);
-    setIsInputMode(false);
+    setExpenseMenuMode(ExpenseMenuMode.DEFAULT);
   };
 
   const handleAddAmountClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsInputMode(true);
+    setExpenseMenuMode(ExpenseMenuMode.INPUT);
     setMode(Mode.ADD);
   };
 
   const handleSubtractAmountClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsInputMode(true);
+    setExpenseMenuMode(ExpenseMenuMode.INPUT);
     setMode(Mode.SUBTRACT);
   };
 
@@ -64,9 +69,22 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
   };
 
   const handleClose = () => {
-    setIsInputMode(false);
+    setExpenseMenuMode(ExpenseMenuMode.DEFAULT);
     setIsActive(false);
     setInputValue('');
+  };
+
+  const handleShowDetails = async () => {
+    const detailsRef = collection(db, 'Expenses', docId, 'Details');
+    const detailsSnap = await getDocs(detailsRef);
+    const detailsData = detailsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setDetails(detailsData);
+  };
+
+  const handleDetailClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    handleShowDetails();
+    setExpenseMenuMode(ExpenseMenuMode.DETAIL);
   };
 
   return (
@@ -91,7 +109,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
             className="w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200"
           >
             <div className="py-1">
-              {isInputMode ? (
+              {expenseMenuMode === ExpenseMenuMode.INPUT ? (
                 <AmountInput
                   value={inputValue}
                   onChange={handleInputChange}
@@ -100,6 +118,29 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
                   docId={docId}
                   mode={mode}
                 />
+              ) : expenseMenuMode === ExpenseMenuMode.DETAIL ? (
+                details.length > 0 && (
+                  <div className="mt-2">
+                    <table className="min-w-full">
+                    <thead>
+                      <tr>
+                        <th className="px-1 py-1 text-sm text-center">日付</th>
+                        <th className="px-1 py-1 text-sm text-center">金額</th>
+                        <th className="px-1 py-1 text-sm text-center">メモ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {details.map(detail => (
+                        <tr key={detail.id}>
+                          <td className="px-1 py-1 text-sm text-center">{format(detail.Date.toDate(), 'H:mm')}</td>
+                          <td className="px-1 py-1 text-sm text-center">{detail.Amount}</td>
+                          <td className="px-1 py-1 text-sm text-center">{detail.Memo}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  </div>
+                )
               ) : (
                 <div>
                   <button
@@ -116,10 +157,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
                   </button>
                   <button
                     className={menuItemStyle}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      /* 詳細表示処理 */
-                    }}
+                    onClick={handleDetailClick}
                   >
                     詳細
                   </button>

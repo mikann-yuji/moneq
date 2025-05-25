@@ -4,10 +4,11 @@ import { useExpense } from '@/context/ExpenseContext';
 import ExpenseInput from './ExpenseInput';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { categories } from '@/constants/category';
 
 export default function ExpenseTable() {
   const { selectedYear, selectedMonth, amounts, setAmount } = useExpense();
-  const categories = ['食費', '日用品', '交通費', '交際費', '趣味', 'その他', 'memo'];
+  const headerCategories = [...categories, 'memo'];
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -42,7 +43,7 @@ export default function ExpenseTable() {
           <tr>
             <th className="p-2"></th>
             <th className="p-2"></th>
-            {categories.map(category => (
+            {headerCategories.map(category => (
               <th key={category} className="p-2">
                 {category}
               </th>
@@ -62,7 +63,7 @@ export default function ExpenseTable() {
                 <td className="p-2 font-semibold bg-green-200 text-center">
                   {weekday}
                 </td>
-                {categories.map((category, catIndex) => (
+                {headerCategories.map((category, catIndex) => (
                   <ExpenseInput
                     key={category}
                     day={day}
@@ -73,7 +74,7 @@ export default function ExpenseTable() {
                     dayIndex={dayIndex}
                     catIndex={catIndex}
                     totalDays={daysInMonth}
-                    totalCategories={categories.length}
+                    totalCategories={headerCategories.length}
                   />
                 ))}
               </tr>
@@ -83,7 +84,7 @@ export default function ExpenseTable() {
             <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center">
               合計
             </td>
-            {categories.map(category => (
+            {headerCategories.map(category => (
               <td key={category} className="p-2 font-semibold bg-green-200">
                 {days.reduce((sum, day) => {
                   const docId = `${selectedYear}-${selectedMonth}-${day}_${category}`;
