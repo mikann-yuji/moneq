@@ -13,13 +13,20 @@ interface ExpenseMenuProps {
   docId: string;
 }
 
+interface Detail {
+  id: string;
+  Amount: number;
+  Memo: string;
+  Date: Date; // もしくは適切な型
+}
+
 export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) {
   const [isActive, setIsActive] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [inputValue, setInputValue] = useState('');
   const [mode, setMode] = useState<Mode | null>(null);
   const [expenseMenuMode, setExpenseMenuMode] = useState<ExpenseMenuMode>(ExpenseMenuMode.DEFAULT);
-  const [details, setDetails] = useState<any[]>([]);
+  const [details, setDetails] = useState<Detail[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const menuItemStyle = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer";
@@ -77,7 +84,12 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
   const handleShowDetails = async () => {
     const detailsRef = collection(db, 'Expenses', docId, 'Details');
     const detailsSnap = await getDocs(detailsRef);
-    const detailsData = detailsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const detailsData = detailsSnap.docs.map(doc => ({ 
+      id: doc.id,
+      Amount: doc.data().Amount,
+      Memo: doc.data().Memo,
+      Date: doc.data().Date
+    }));
     setDetails(detailsData);
   };
 
@@ -132,7 +144,7 @@ export default function ExpenseMenu({ currentAmount, docId }: ExpenseMenuProps) 
                     <tbody>
                       {details.map(detail => (
                         <tr key={detail.id}>
-                          <td className="px-1 py-1 text-sm text-center">{format(detail.Date.toDate(), 'H:mm')}</td>
+                          <td className="px-1 py-1 text-sm text-center">{format(detail.Date, 'H:mm')}</td>
                           <td className="px-1 py-1 text-sm text-center">{detail.Amount}</td>
                           <td className="px-1 py-1 text-sm text-center">{detail.Memo}</td>
                         </tr>
