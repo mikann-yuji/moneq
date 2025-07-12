@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { generateSalt, deriveKEK, generateDEK, encryptDEK, encryptData, decryptData, exportDek } from '@/utils/crypto';
+import { generateSalt, deriveKEK, generateDEK, encryptDEK, exportDek } from '@/utils/crypto';
 import { doc } from 'firebase/firestore';
 import { setDoc } from 'firebase/firestore';
 import { useDek } from '@/context/DekContext';

@@ -5,7 +5,6 @@ import { useExpense } from '@/context/ExpenseContext';
 import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
 import { useFixedCost } from '@/context/FixedCostContext';
 import { db } from '@/lib/firebase';
-import { inputStyle } from '@/styles/inputStyles';
 import { collection, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import FixedCostInput from './FixedCostInput';

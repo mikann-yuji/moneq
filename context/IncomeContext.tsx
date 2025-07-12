@@ -3,11 +3,8 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs } from 'firebase/firestore';
-import useSWR from 'swr';
-import { format } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 import { changePrimaryKey, pKeyToDateAndCategory } from '@/utils/changePrimaryKey';
 import { IncomeDataFromFirestoreType, IncomeDataType, GetIncomeDataFromFirestoreType } from '@/types/incomeType';
@@ -21,22 +18,14 @@ interface IncomeContextType {
 
 const IncomeContext = createContext<IncomeContextType | undefined>(undefined);
 
-const fetcher = async (docId: string) => {
-  const docRef = doc(db, 'Expenses', docId);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data().Amount || 0 : 0;
-};
-
 export function IncomeProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [contextPKey, setContextPKey] = useState<string>('');
   const [incomeDatas, setIncomeDatas] = useState<IncomeDataType>({});
   const [isSubmit, setIsSubmit] = useState<boolean>(false);
 
   const setIncomeData = (docId: string, pKey: string, amount: number, isSubmit: boolean = false) => {
-    console.log(pKey);
     setIncomeDatas(prev => ({
       ...prev,
       [pKey]: {
@@ -97,8 +86,6 @@ export function IncomeProvider({ children }: { children: ReactNode }) {
       Amount: incomeDatas[contextPKey]?.amount,
       Category: category,
     }
-    console.log(incomeDatas[contextPKey]);
-    console.log(date);
 
     if (dek && user) {
       const { encrypted, iv } = await encryptData(rawIncomeData, dek);

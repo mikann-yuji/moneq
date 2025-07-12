@@ -24,7 +24,6 @@ export function DekProvider({ children }: { children: ReactNode }) {
     
       const data = snapshot.data();
       const kek = await deriveKEK(password, base64ToUint8Array(data.Salt))
-      console.log('test');
 
       return decryptDEK(
         base64ToArrayBuffer(data.EncryptedDek), 

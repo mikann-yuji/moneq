@@ -2,11 +2,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs, where, query } from 'firebase/firestore';
-import useSWR from 'swr';
+import { doc, setDoc, addDoc, collection, Query, getDocs, where, query } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 import { FixedCostBudgetDataFromFirestoreType, FixedCostBudgetDataType, GetFixedCostBudgetDataFromFirestoreType } from '@/types/fixedCostBudgetType';
 
@@ -19,9 +17,8 @@ interface FixedCostBudgetContextType {
 const FixedCostBudgetContext = createContext<FixedCostBudgetContextType | undefined>(undefined);
 
 export function FixedCostBudgetProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [contextPKey, setContextPKey] = useState<string>('');
   const [fixedCostBudgetDatas, setFixedCostBudgetDatas] = useState<FixedCostBudgetDataType>({});
   const [isSubmit, setIsSubmit] = useState<boolean>(false);
@@ -50,7 +47,6 @@ export function FixedCostBudgetProvider({ children }: { children: ReactNode }) {
   }, [dek]);
 
   const setFixedCostBudgetData = (docId: string, pKey: string, amount: number, isSubmit: boolean = false) => {
-    console.log(pKey);
     setFixedCostBudgetDatas(prev => ({
       ...prev,
       [pKey]: {

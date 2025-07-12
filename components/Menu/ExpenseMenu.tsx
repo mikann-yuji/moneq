@@ -4,8 +4,6 @@ import { createPortal } from 'react-dom';
 import AmountInput from './AmountInput';
 import { Mode } from '@/constants/modes';
 import { ExpenseMenuMode } from '@/constants/expenseMenuModes';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { format } from 'date-fns';
 import { useExpense } from '@/context/ExpenseContext';
 
@@ -14,20 +12,12 @@ interface ExpenseMenuProps {
   pKey: string;
 }
 
-// interface Detail {
-//   id: string;
-//   Amount: number;
-//   Memo: string;
-//   Date: Date; // もしくは適切な型
-// }
-
 export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
   const [isActive, setIsActive] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [inputValue, setInputValue] = useState('');
   const [mode, setMode] = useState<Mode | null>(null);
   const [expenseMenuMode, setExpenseMenuMode] = useState<ExpenseMenuMode>(ExpenseMenuMode.DEFAULT);
-  // const [details, setDetails] = useState<Detail[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
   const { detailDatas } = useExpense();
 
@@ -85,7 +75,6 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
 
   const handleDetailClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    // handleShowDetails();
     setExpenseMenuMode(ExpenseMenuMode.DETAIL);
   };
 

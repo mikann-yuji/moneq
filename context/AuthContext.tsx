@@ -26,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      // setLoading(false);
 
       if (user) {
         const rawDEK = sessionStorage.getItem("dek");

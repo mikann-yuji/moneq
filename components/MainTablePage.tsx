@@ -1,15 +1,11 @@
 // app/page.tsx
 'use client';
-import Link from 'next/link';
-import Image from 'next/image';
+
 import { useState, useRef, useEffect } from 'react';
 import IncomeSection from '@/components/IncomeSection/IncomeTable';
 import FixedCostSection from '@/components/FixedCostSection/FixedCostTable';
 import ExpenseTable from '@/components/TableSection/ExpenseTable';
 import DateSelector from '@/components/DateSelector';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useIncomeCategory } from '@/context/IncomeCategoryContext';
 import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
@@ -17,10 +13,8 @@ import HamburgerMenu from './HamburgerMenu';
 
 export default function MainTablePage() {
   const [height, setHeight] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const { logOut, loading, user } = useAuth();
+  const { loading, user } = useAuth();
   const { sortedIncomeCategories } = useIncomeCategory();
   const { sortedFixedCostCategories } = useFixedCostCategory();
 
@@ -29,10 +23,6 @@ export default function MainTablePage() {
       setHeight(ref.current.offsetHeight);
     }
   }, [user, sortedIncomeCategories, sortedFixedCostCategories]);
-
-  const handleLogout = async () => {
-    await logOut();
-  };
 
   return (
     <div className="min-h-screen bg-gray-100">

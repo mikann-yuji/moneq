@@ -2,11 +2,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs, query, where } from 'firebase/firestore';
-import useSWR from 'swr';
+import { doc, setDoc, addDoc, collection, Query, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 import { IncomeBudgetDataFromFirestoreType, IncomeBudgetDataType, GetIncomeBudgetDataFromFirestoreType } from '@/types/incomeBudgetType';
 
@@ -19,9 +17,8 @@ interface IncomeBudgetContextType {
 const IncomeBudgetContext = createContext<IncomeBudgetContextType | undefined>(undefined);
 
 export function IncomeBudgetProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [contextPKey, setContextPKey] = useState<string>('');
   const [incomeBudgetDatas, setIncomeBudgetDatas] = useState<IncomeBudgetDataType>({});
   const [isSubmit, setIsSubmit] = useState<boolean>(false);
@@ -50,7 +47,6 @@ export function IncomeBudgetProvider({ children }: { children: ReactNode }) {
   }, [dek]);
   
   const setIncomeBudgetData = (docId: string, pKey: string, amount: number, isSubmit: boolean = false) => {
-    console.log(pKey);
     setIncomeBudgetDatas(prev => ({
       ...prev,
       [pKey]: {

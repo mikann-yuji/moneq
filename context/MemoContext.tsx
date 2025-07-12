@@ -3,11 +3,8 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs } from 'firebase/firestore';
-import useSWR from 'swr';
-import { format } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 import { changePrimaryKey, pKeyToDateAndCategory } from '@/utils/changePrimaryKey';
 import { MemoDataFromFirestoreType, MemoDataType, GetMemoDataFromFirestoreType } from '@/types/memoType';
@@ -22,9 +19,8 @@ interface MemoContextType {
 const MemoContext = createContext<MemoContextType | undefined>(undefined);
 
 export function MemoProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [contextPKey, setContextPKey] = useState<string>('');
   const [memoDatas, setMemoDatas] = useState<MemoDataType>({});
   const [isSubmit, setIsSubmit] = useState<boolean>(false);
@@ -51,7 +47,6 @@ export function MemoProvider({ children }: { children: ReactNode }) {
         dek,
         base64ToUint8Array(data.IV)
       );
-      console.log(decryptedData);
       const date = data.Date.toDate();
       const docId = doc.id;
       dataArray.push({ docId, date, decryptedData });
@@ -67,8 +62,6 @@ export function MemoProvider({ children }: { children: ReactNode }) {
         memo: data.Memo
       }
     }));
-    console.log(memoDatas);
-    console.log('確認',changePrimaryKey(date, null, PrimaryKeyType.WITHOUTCATEGORY));
   }
 
   const getAndSetMemoData = async (query: Query, dek: CryptoKey) => {

@@ -10,7 +10,6 @@ export default function SingIn() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const { setDek, getDek } = useDek();
   const router = useRouter();
@@ -39,10 +38,6 @@ export default function SingIn() {
       setLoading(false);
     }
   };
-
-  // if (isSignUp) {
-  //   return <SignUp setIsSignUp={setIsSignUp} />; // SignUpコンポーネントを表示
-  // }
 
   return (
     <div className="bg-gray-100 min-h-screen flex items-center justify-center">

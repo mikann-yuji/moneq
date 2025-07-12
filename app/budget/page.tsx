@@ -1,15 +1,7 @@
 'use client';
-import { useAuth } from '@/context/AuthContext';
-import { useDek } from '@/context/DekContext';
-import { useExpense } from '@/context/ExpenseContext';
+
 import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
-import { useFixedCost } from '@/context/FixedCostContext';
-import { db } from '@/lib/firebase';
-import { inputStyle } from '@/styles/inputStyles';
-import { collection, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { changePrimaryKey } from '@/utils/changePrimaryKey';
-import { PrimaryKeyType } from '@/constants/primaryKey';
 import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
 import ExpenseBudgetInput from '@/components/BudgetSection/ExpenseBudgetInput';
 import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
@@ -21,8 +13,6 @@ import { useIncomeBudget } from '@/context/IncomeBudgetContext';
 import Link from 'next/link';
 
 export default function BudgetPage() {
-  const { dek } = useDek();
-  const { user } = useAuth();
   const [totalExpenseBudget, setTotalExpenseBudget] = useState<number>(0);
   const [totalFixedCostBudget, setTotalFixedCostBudget] = useState<number>(0);
   const [totalIncomeBudget, setTotalIncomeBudget] = useState<number>(0);

@@ -2,19 +2,13 @@
 import { use, useEffect, useState } from 'react';
 import { useExpense } from '@/context/ExpenseContext';
 import ExpenseInput from './ExpenseInput';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-// import { categories } from '@/constants/category';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { decryptData, base64ToUint8Array, base64ToArrayBuffer } from '@/utils/crypto';
 import { useRouter } from 'next/navigation';
-import { ExpenseDataFromFirestoreType } from '@/types/expenseType';
-import { format } from 'date-fns';
 import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
 import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
-import { useFixedCostBudget } from '@/context/FixedCostBudgetContext';
-import { useIncomeBudget } from '@/context/IncomeBudgetContext';
 import { useExpenseMemo } from '@/context/MemoContext';
 
 export default function ExpenseTable() {
@@ -22,13 +16,12 @@ export default function ExpenseTable() {
   const { getAndSetMemoData } = useExpenseMemo();
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
   const { sortedExpenseCategories } = useExpenseCategory();
   const headerCategories = [...sortedExpenseCategories, 'memo'];
   const { expenseBudgetDatas } = useExpenseBudget();
   const [totalCategoryExpense, setTotalCategoryExpense] = useState<{ [key: string]: number }>({});
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {

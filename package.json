@@ -21,6 +21,7 @@
   "devDependencies": {
     "@egoist/tailwindcss-icons": "^1.9.0",
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.31.0",
     "@iconify-json/material-symbols": "^1.2.28",
     "@iconify-json/ph": "^1.2.2",
     "@iconify-json/simple-icons": "^1.2.40",
@@ -29,10 +30,13 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9",
+    "eslint": "^9.31.0",
     "eslint-config-next": "15.3.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.10",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.36.0"
   }
 }

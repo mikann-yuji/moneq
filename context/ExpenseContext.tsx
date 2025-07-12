@@ -2,13 +2,11 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs } from 'firebase/firestore';
-import useSWR from 'swr';
+import { doc, setDoc, addDoc, collection, Query, getDocs } from 'firebase/firestore';
 import { DetailsType, DetailType, ExpenseDataFromFirestoreType, ExpenseDataType, GetExpenseDataFromFirestoreType } from '@/types/expenseType';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 
 interface ExpenseContextType {
@@ -27,29 +25,14 @@ interface ExpenseContextType {
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
-const fetcher = async (docId: string) => {
-  const docRef = doc(db, 'Expenses', docId);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data().Amount || 0 : 0;
-};
-
 export function ExpenseProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [expenseDatas, setExpenseDatas] = useState<ExpenseDataType>({});
   const [detailDatas, setDetailDatas] = useState<DetailsType>({});
   const [contextPKey, setContextPKey] = useState<string>('');
-
-  // const getAmount = async (docId: string) => {
-  //   const { data } = useSWR(docId, fetcher);
-  //   if (data !== undefined) {
-  //     setAmounts(prev => ({ ...prev, [docId]: data }));
-  //   }
-  //   return data || 0;
-  // };
 
   const getExpenseData = async (query: Query, dek: CryptoKey): Promise<GetExpenseDataFromFirestoreType> => {
     const querySnapshot = await getDocs(query);
@@ -105,7 +88,6 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   }
   
   const setExpenseDataFromFirestore = (docId: string, date: string, data: ExpenseDataFromFirestoreType) => {
-    console.log(date);
     setExpenseDatas(prev => ({
       ...prev,
       [`${date}_${data.Category}`]: {
@@ -133,7 +115,6 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     if (contextPKey) {
       fetchData();
     }
-    console.log(detailDatas);
   }, [expenseDatas, contextPKey, detailDatas]);
 
   const createAndUpdateExpenseData = async (docId: string, date: string, category: string) => {

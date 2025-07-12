@@ -2,13 +2,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs } from 'firebase/firestore';
-import useSWR from 'swr';
-import { DetailsType, DetailType, ExpenseDataFromFirestoreType, ExpenseDataType, GetExpenseDataFromFirestoreType } from '@/types/expenseType';
-import { format } from 'date-fns';
+import { doc, setDoc, addDoc, collection, Query, getDocs } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 import { changePrimaryKey, pKeyToDateAndCategory } from '@/utils/changePrimaryKey';
 import { FixedCostDataFromFirestoreType, FixedCostDataType, GetFixedCostDataFromFirestoreType } from '@/types/fixedCostType';
@@ -23,9 +19,8 @@ interface FixedCostContextType {
 const FixedCostContext = createContext<FixedCostContextType | undefined>(undefined);
 
 export function FixedCostProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [contextPKey, setContextPKey] = useState<string>('');
   const [fixedCostDatas, setFixedCostDatas] = useState<FixedCostDataType>({});
   const [isSubmit, setIsSubmit] = useState<boolean>(false);

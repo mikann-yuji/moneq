@@ -1,15 +1,11 @@
 'use client';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+
 import { useExpense } from '@/context/ExpenseContext';
 import ExpenseMenu from '@/components/Menu/ExpenseMenu';
 import { inputStyle } from '@/styles/inputStyles';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
 import { useRouter } from 'next/navigation';
-import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64 } from '@/utils/crypto';
-import { DetailsFromFirestoreType, ExpenseDataFromFirestoreType } from '@/types/expenseType';
-import { useEffect } from 'react';
 import MemoInput from './MemoInput';
 
 interface ExpenseInputProps {
@@ -30,9 +26,6 @@ export default function ExpenseInput({
   pKey
 }: ExpenseInputProps) {
   const { expenseDatas, setExpenseData } = useExpense();
-  const { user } = useAuth();
-  const { dek } = useDek();
-  const router = useRouter();
 
   const handleChange = (value: string) => {
     const expenseData = expenseDatas[pKey]

@@ -2,11 +2,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, addDoc, collection, Query, getDocs, where, query } from 'firebase/firestore';
-import useSWR from 'swr';
+import { doc, setDoc, addDoc, collection, Query, getDocs, where, query } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { encryptData, decryptData, uint8ArrayToBase64, arrayBufferToBase64, base64ToArrayBuffer, base64ToUint8Array } from '@/utils/crypto';
 import { ExpenseBudgetDataFromFirestoreType, ExpenseBudgetDataType, GetExpenseBudgetDataFromFirestoreType } from '@/types/expenseBudgetType';
 
@@ -19,9 +17,8 @@ interface ExpenseBudgetContextType {
 const ExpenseBudgetContext = createContext<ExpenseBudgetContextType | undefined>(undefined);
 
 export function ExpenseBudgetProvider({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { dek } = useDek();
-  const router = useRouter();
   const [contextPKey, setContextPKey] = useState<string>('');
   const [expenseBudgetDatas, setExpenseBudgetDatas] = useState<ExpenseBudgetDataType>({});
   const [isSubmit, setIsSubmit] = useState<boolean>(false);
@@ -50,7 +47,6 @@ export function ExpenseBudgetProvider({ children }: { children: ReactNode }) {
   }, [dek]);
 
   const setExpenseBudgetData = (docId: string, pKey: string, amount: number, isSubmit: boolean = false) => {
-    console.log(pKey);
     setExpenseBudgetDatas(prev => ({
       ...prev,
       [pKey]: {
