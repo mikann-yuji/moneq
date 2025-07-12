@@ -23,7 +23,6 @@ export default function SingIn() {
       const uid = auth.currentUser?.uid;
       if (uid) {
         const dek = await getDek(uid, password);
-        console.log(dek);
         if (dek) {
           sessionStorage.setItem("dek", await exportDek(dek));
           setDek(dek);
@@ -32,8 +31,12 @@ export default function SingIn() {
           setError("DEKの取得に失敗しました。");
         }
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('予期しないエラーが発生しました。');
+      }
     } finally {
       setLoading(false);
     }

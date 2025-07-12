@@ -1,12 +1,11 @@
 'use client';
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useExpense } from '@/context/ExpenseContext';
 import ExpenseInput from './ExpenseInput';
 import { collection, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
 import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
 import { useExpenseMemo } from '@/context/MemoContext';

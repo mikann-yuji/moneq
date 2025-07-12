@@ -3,9 +3,6 @@
 import { useExpense } from '@/context/ExpenseContext';
 import ExpenseMenu from '@/components/Menu/ExpenseMenu';
 import { inputStyle } from '@/styles/inputStyles';
-import { useAuth } from '@/context/AuthContext';
-import { useDek } from '@/context/DekContext';
-import { useRouter } from 'next/navigation';
 import MemoInput from './MemoInput';
 
 interface ExpenseInputProps {

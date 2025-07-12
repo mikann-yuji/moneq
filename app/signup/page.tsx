@@ -50,8 +50,12 @@ export default function SingUp() {
 
         router.push('/');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('予期しないエラーが発生しました。');
+      }
     } finally {
       setLoading(false);
     }
