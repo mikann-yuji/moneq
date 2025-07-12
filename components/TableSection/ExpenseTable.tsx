@@ -1,40 +1,71 @@
 'use client';
-import { useEffect } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useExpense } from '@/context/ExpenseContext';
 import ExpenseInput from './ExpenseInput';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { categories } from '@/constants/category';
+// import { categories } from '@/constants/category';
+import { useAuth } from '@/context/AuthContext';
+import { useDek } from '@/context/DekContext';
+import { decryptData, base64ToUint8Array, base64ToArrayBuffer } from '@/utils/crypto';
+import { useRouter } from 'next/navigation';
+import { ExpenseDataFromFirestoreType } from '@/types/expenseType';
+import { format } from 'date-fns';
+import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
+import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
+import { useFixedCostBudget } from '@/context/FixedCostBudgetContext';
+import { useIncomeBudget } from '@/context/IncomeBudgetContext';
+import { useExpenseMemo } from '@/context/MemoContext';
 
 export default function ExpenseTable() {
-  const { selectedYear, selectedMonth, amounts, setAmount } = useExpense();
-  const headerCategories = [...categories, 'memo'];
+  const { selectedYear, selectedMonth, getAndSetExpenseData, expenseDatas } = useExpense();
+  const { getAndSetMemoData } = useExpenseMemo();
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const { user, loading } = useAuth();
+  const { dek } = useDek();
+  const { sortedExpenseCategories } = useExpenseCategory();
+  const headerCategories = [...sortedExpenseCategories, 'memo'];
+  const { expenseBudgetDatas } = useExpenseBudget();
+  const [totalCategoryExpense, setTotalCategoryExpense] = useState<{ [key: string]: number }>({});
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       const startDate = new Date(selectedYear, selectedMonth - 1, 1);
       const endDate = new Date(selectedYear, selectedMonth, 0);
       
-      const q = query(
+      const expensesQ = query(
         collection(db, 'Expenses'),
         where('Date', '>=', startDate),
-        where('Date', '<=', endDate)
+        where('Date', '<=', endDate),
+        where('UserId', '==', user?.uid || '')
       );
-      
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const day = data.Date.toDate().getDate();
-        const category = data.Category;
-        const docId = `${selectedYear}-${selectedMonth}-${day}_${category}`;
-        setAmount(docId, data.Amount);
-      });
-    };
+      const memoQ = query(
+        collection(db, 'Memos'),
+        where('Date', '>=', startDate),
+        where('Date', '<=', endDate),
+        where('UserId', '==', user?.uid || '')
+      );
+
+      if (dek) {
+        getAndSetExpenseData(expensesQ, dek);
+        getAndSetMemoData(memoQ, dek);
+      }
+    }
 
     fetchData();
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, dek]);
+
+  useEffect(() => {
+    headerCategories.forEach(category => {
+      const total = days.reduce((sum, day) => {
+        const pKey = `${selectedYear}-${selectedMonth}-${day}_${category}`;
+        return sum + (expenseDatas[pKey]?.amount || 0);
+      }, 0);
+      setTotalCategoryExpense(prev => ({...prev, [category]: total}));
+    });
+  }, [expenseDatas]);
 
   return (
     <div className="overflow-auto h-full">
@@ -66,15 +97,12 @@ export default function ExpenseTable() {
                 {headerCategories.map((category, catIndex) => (
                   <ExpenseInput
                     key={category}
-                    day={day}
-                    category={category}
-                    selectedYear={selectedYear}
-                    selectedMonth={selectedMonth}
                     isMemo={category === 'memo'}
                     dayIndex={dayIndex}
                     catIndex={catIndex}
                     totalDays={daysInMonth}
                     totalCategories={headerCategories.length}
+                    pKey={`${selectedYear}-${selectedMonth}-${day}_${category}`} 
                   />
                 ))}
               </tr>
@@ -85,12 +113,41 @@ export default function ExpenseTable() {
               合計
             </td>
             {headerCategories.map(category => (
-              <td key={category} className="p-2 font-semibold bg-green-200">
-                {days.reduce((sum, day) => {
-                  const docId = `${selectedYear}-${selectedMonth}-${day}_${category}`;
-                  return sum + (amounts[docId] || 0);
-                }, 0).toLocaleString()}円
-              </td>
+              category == 'memo' 
+              ? (<td key={category} className="p-2 font-semibold bg-gray-200"></td>)
+              : (
+                  <td key={category} className="p-2 font-semibold bg-green-200">
+                    {(totalCategoryExpense[category] || 0).toLocaleString()}円
+                  </td>
+                )
+            ))}
+          </tr>
+          <tr>
+            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center">
+              予算
+            </td>
+            {headerCategories.map(category => (
+              category == 'memo' 
+                ? (<td key={category} className="p-2 font-semibold bg-gray-200"></td>)
+                : (
+                    <td key={category} className="p-2 font-semibold bg-green-200">
+                      {(expenseBudgetDatas[category]?.amount || '-').toLocaleString()}円
+                    </td>
+                  )
+            ))}
+          </tr>
+          <tr>
+            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center">
+              残
+            </td>
+            {headerCategories.map(category => (
+              category == 'memo' 
+                ? (<td key={category} className="p-2 font-semibold bg-gray-200"></td>)
+                : (
+                    <td key={category} className="p-2 font-semibold bg-green-200">
+                      {((expenseBudgetDatas[category]?.amount - totalCategoryExpense[category]) || '-').toLocaleString()}円
+                    </td>
+                  )
             ))}
           </tr>
         </tbody>

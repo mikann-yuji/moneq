@@ -8,13 +8,13 @@ interface AmountInputProps {
   onChange: (value: string) => void;
   onClose: () => void;
   currentAmount: number;
-  docId: string;
+  pKey: string;
   mode: Mode | null;
 }
 
-export default function AmountInput({ value, onChange, onClose, currentAmount, docId, mode }: AmountInputProps) {
+export default function AmountInput({ value, onChange, onClose, currentAmount, pKey, mode }: AmountInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { updateAmount } = useExpense();
+  const { updateAmount, setExpenseData, expenseDatas, createAndUpdateExpenseData } = useExpense();
 
   useEffect(() => {
     if (inputRef.current) {
@@ -34,8 +34,12 @@ export default function AmountInput({ value, onChange, onClose, currentAmount, d
       } else if (mode === Mode.SUBTRACT) {
         totalAmount -= newAmount;
       }
+      const expenseData = expenseDatas[pKey]
+      const docId = expenseData?.docId;
 
-      await updateAmount(docId, totalAmount);
+      setExpenseData(docId, pKey, totalAmount);
+      // const [date, category] = pKey.split('_');
+      // await createAndUpdateExpenseData(docId, date, category);
       console.log('金額を更新しました:', totalAmount);
       onClose();
     } catch (error) {
