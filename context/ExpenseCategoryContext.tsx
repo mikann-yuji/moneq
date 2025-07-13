@@ -13,7 +13,7 @@ interface ExpenseCategoryContextType {
   expenseCategories: ExpenseCategoryDataType | undefined;
   setExpenseCategory: (categories: ExpenseCategoriesDataType) => void;
   sortedExpenseCategories: string[];
-  createFirstExpenseCategories: (uid: string) => Promise<void>;
+  createFirstExpenseCategories: (uid: string, dek: CryptoKey) => Promise<void>;
 }
 
 const ExpenseCategoryContext = createContext<ExpenseCategoryContextType | undefined>(undefined);
@@ -93,7 +93,7 @@ export function ExpenseCategoryProvider({ children }: { children: ReactNode }) {
     return data.decryptedData;
   }
 
-  const createFirstExpenseCategories = async (uid: string) => {
+  const createFirstExpenseCategories = async (uid: string, dek: CryptoKey) => {
     const rawExpenseCategories: ExpenseCategoryDataFromFirestoreType = firstExpenseCategories.map((category, idx) => (
       {
         Category: category,
@@ -101,7 +101,7 @@ export function ExpenseCategoryProvider({ children }: { children: ReactNode }) {
       }
     ));
 
-    if (dek && user) {
+    if (user) {
       const { encrypted, iv } = await encryptData(rawExpenseCategories, dek);
 
       await addDoc(collection(db, 'ExpenseCategory'), {

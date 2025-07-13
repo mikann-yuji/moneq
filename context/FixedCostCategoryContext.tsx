@@ -13,7 +13,7 @@ interface FixedCostCategoryContextType {
   fixedCostCategories: FixedCostCategoryDataType | undefined;
   setFixedCostCategory: (categories: FixedCostCategoriesDataType) => void;
   sortedFixedCostCategories: string[];
-  createFirstFixedCostCategories: (uid: string) => Promise<void>;
+  createFirstFixedCostCategories: (uid: string, dek: CryptoKey) => Promise<void>;
 }
 
 const FixedCostCategoryContext = createContext<FixedCostCategoryContextType | undefined>(undefined);
@@ -93,7 +93,7 @@ export function FixedCostCategoryProvider({ children }: { children: ReactNode })
     return data.decryptedData;
   }
 
-  const createFirstFixedCostCategories = async (uid: string) => {
+  const createFirstFixedCostCategories = async (uid: string, dek: CryptoKey) => {
     const rawFixedCostCategories: FixedCostCategoryDataFromFirestoreType = firstFixedCostCategories.map((category, idx) => (
       {
         Category: category,
@@ -101,7 +101,7 @@ export function FixedCostCategoryProvider({ children }: { children: ReactNode })
       }
     ));
 
-    if (dek && user) {
+    if (user) {
       const { encrypted, iv } = await encryptData(rawFixedCostCategories, dek);
 
       await addDoc(collection(db, 'FixedCostCategory'), {

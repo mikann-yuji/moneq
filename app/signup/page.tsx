@@ -44,9 +44,9 @@ export default function SingUp() {
         setDek(dek);
 
         // 最初のデフォルトカテゴリーをつくる
-        await createFirstExpenseCategories(uid);
-        await createFirstIncomeCategories(uid);
-        await createFirstFixedCostCategories(uid);
+        await createFirstExpenseCategories(uid, dek);
+        await createFirstIncomeCategories(uid, dek);
+        await createFirstFixedCostCategories(uid, dek);
 
         router.push('/');
       }

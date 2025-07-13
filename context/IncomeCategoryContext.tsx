@@ -13,7 +13,7 @@ interface IncomeCategoryContextType {
   incomeCategories: IncomeCategoryDataType | undefined;
   setIncomeCategory: (categories: IncomeCategoriesDataType) => void;
   sortedIncomeCategories: string[];
-  createFirstIncomeCategories: (uid: string) => Promise<void>;
+  createFirstIncomeCategories: (uid: string, dek: CryptoKey) => Promise<void>;
 }
 
 const IncomeCategoryContext = createContext<IncomeCategoryContextType | undefined>(undefined);
@@ -93,7 +93,7 @@ export function IncomeCategoryProvider({ children }: { children: ReactNode }) {
     return data.decryptedData;
   }
 
-  const createFirstIncomeCategories = async () => {
+  const createFirstIncomeCategories = async (uid: string, dek: CryptoKey) => {
     const rawIncomeCategories: IncomeCategoryDataFromFirestoreType = firstIncomeCategories.map((category, idx) => (
       {
         Category: category,
@@ -101,11 +101,11 @@ export function IncomeCategoryProvider({ children }: { children: ReactNode }) {
       }
     ));
 
-    if (dek && user) {
+    if (user) {
       const { encrypted, iv } = await encryptData(rawIncomeCategories, dek);
 
       await addDoc(collection(db, 'IncomeCategory'), {
-        UserId: user.uid,
+        UserId: uid,
         IV: uint8ArrayToBase64(iv),
         EncryptedData: arrayBufferToBase64(encrypted),
         CreatedAt: new Date(),
