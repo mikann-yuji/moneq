@@ -61,6 +61,7 @@ export default function ExpenseTable() {
 
   return (
     <div className="overflow-auto h-full">
+      <div style={{ background: 'yellow' }}>ここはExpenseTableです</div>
       <table className="w-full">
         <thead className="bg-green-200 sticky top-0 z-10">
           <tr>
