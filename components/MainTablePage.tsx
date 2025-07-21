@@ -14,7 +14,7 @@ import SlideInPanel from './SlideInPanel';
 import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 
 export default function MainTablePage() {
-  const [height, setHeight] = useState(0);
+  const [height, setHeight] = useState('0px');
   const ref = useRef<HTMLDivElement>(null);
   const { loading, user } = useAuth();
   const { sortedIncomeCategories } = useIncomeCategory();
@@ -23,7 +23,7 @@ export default function MainTablePage() {
 
   useEffect(() => {
     if (ref.current) {
-      setHeight(ref.current.offsetHeight);
+      setHeight(ref.current.offsetHeight ? `${ref.current.offsetHeight}px` : '100%');
     }
   }, [user, sortedIncomeCategories, sortedFixedCostCategories]);
 
@@ -38,7 +38,7 @@ export default function MainTablePage() {
         </div>
         <DateSelector />
         <div className="flex gap-4">
-          <div className="flex-[5] min-w-0" style={{ height: `${height}px` }}>
+          <div className="flex-[5] min-w-0" style={{ height: `${height}` }}>
             {!loading && <ExpenseTable />}
           </div>
           <div ref={ref} className="flex-[1] space-y-4 hidden md:block">
