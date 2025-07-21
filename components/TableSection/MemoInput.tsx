@@ -1,7 +1,6 @@
 'use client';
 
 import { inputStyle } from '@/styles/inputStyles';
-import { useEffect } from 'react';
 import { useExpenseMemo } from '@/context/MemoContext';
 
 interface MemoInputProps {
