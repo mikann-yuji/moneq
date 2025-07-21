@@ -61,7 +61,7 @@ export default function IncomeCategoryEditArea() {
 
   return (
     <>
-      <h2 className="text-lg font-semibold mb-4 mt-4">変動費</h2>
+      <h2 className="text-lg font-semibold mb-4 mt-4">収入</h2>
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="incomeCategories">
           {(provided) => (

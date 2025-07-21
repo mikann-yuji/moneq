@@ -10,6 +10,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useIncomeCategory } from '@/context/IncomeCategoryContext';
 import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
 import HamburgerMenu from './HamburgerMenu';
+import SlideInPanel from './SlideInPanel';
+import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 
 export default function MainTablePage() {
   const [height, setHeight] = useState(0);
@@ -17,6 +19,7 @@ export default function MainTablePage() {
   const { loading, user } = useAuth();
   const { sortedIncomeCategories } = useIncomeCategory();
   const { sortedFixedCostCategories } = useFixedCostCategory();
+  const [showSlideInPanel, setShowSlideInPanel] = useState(false);
 
   useEffect(() => {
     if (ref.current) {
@@ -38,11 +41,31 @@ export default function MainTablePage() {
           <div className="flex-[5] min-w-0" style={{ height: `${height}px` }}>
             {!loading && <ExpenseTable />}
           </div>
-          <div ref={ref} className="flex-[1] space-y-4">
+          <div ref={ref} className="flex-[1] space-y-4 hidden md:block">
             <IncomeSection />
             <FixedCostSection />
           </div>
         </div>
+        {!showSlideInPanel && (
+          <button
+            className="fixed top-1/2 right-0 z-40 transform -translate-y-1/2 h-24 w-5 flex flex-col 
+              items-center justify-center bg-gray-200 hover:bg-gray-300 transition-colors rounded-l-lg md:hidden"
+            style={{ minWidth: '20px' }}
+            onClick={() => setShowSlideInPanel(true)}
+            aria-label="パネルを開く"
+          >
+            <ChevronLeftIcon className="w-4 h-8 text-gray-500" />
+          </button>
+        )}
+        <SlideInPanel
+          isOpen={showSlideInPanel}
+          onClose={() => setShowSlideInPanel(false)}
+          title=""
+        >
+          <IncomeSection />
+          <div className="h-4"></div>
+          <FixedCostSection />
+        </SlideInPanel>
       </main>
     </div>
   );

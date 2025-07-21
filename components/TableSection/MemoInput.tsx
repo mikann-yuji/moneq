@@ -28,8 +28,6 @@ export default function MemoInput({
     setMemoData(docId, pKey, memo, true);
   };
 
-  useEffect(() => console.log(memoDatas), [memoDatas])
-
   return (
     <input
       key={pKey}

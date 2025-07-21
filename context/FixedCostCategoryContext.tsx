@@ -94,6 +94,7 @@ export function FixedCostCategoryProvider({ children }: { children: ReactNode })
   }
 
   const createFirstFixedCostCategories = async (uid: string, dek: CryptoKey) => {
+    console.log("うごいてるよ");
     const rawFixedCostCategories: FixedCostCategoryDataFromFirestoreType = firstFixedCostCategories.map((category, idx) => (
       {
         Category: category,
@@ -101,18 +102,16 @@ export function FixedCostCategoryProvider({ children }: { children: ReactNode })
       }
     ));
 
-    if (user) {
-      const { encrypted, iv } = await encryptData(rawFixedCostCategories, dek);
-
-      await addDoc(collection(db, 'FixedCostCategory'), {
-        UserId: uid,
-        IV: uint8ArrayToBase64(iv),
-        EncryptedData: arrayBufferToBase64(encrypted),
-        CreatedAt: new Date(),
-        UpdatedAt: new Date()
-      });
-    }
+    const { encrypted, iv } = await encryptData(rawFixedCostCategories, dek);
+    await addDoc(collection(db, 'FixedCostCategory'), {
+      UserId: uid,
+      IV: uint8ArrayToBase64(iv),
+      EncryptedData: arrayBufferToBase64(encrypted),
+      CreatedAt: new Date(),
+      UpdatedAt: new Date()
+    });
   }
+  
   const updateFixedCostCategories = async () => {
     if (dek && user && fixedCostCategories) {
       const rawFixedCostCategories: FixedCostCategoryDataFromFirestoreType = fixedCostCategories.categories.map(categoryObj => (

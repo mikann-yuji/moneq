@@ -2,12 +2,14 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { addDoc, collection, doc, getDocs, limit, Query, query, setDoc, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDocs, limit, onSnapshot, Query, query, setDoc, where } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { useDek } from '@/context/DekContext';
 import { firstExpenseCategories } from '@/constants/category';
 import { ExpenseCategoriesDataType, ExpenseCategoryDataFromFirestoreType, ExpenseCategoryDataType, GetExpenseCategoryDataFromFirestoreType } from '@/types/expenseType';
 import { arrayBufferToBase64, decryptData, base64ToArrayBuffer, base64ToUint8Array, encryptData, uint8ArrayToBase64 } from '@/utils/crypto';
+import { FSChangeType } from '@/constants/fsChangeType';
+import { useLoki } from './LokiContext';
 
 interface ExpenseCategoryContextType {
   expenseCategories: ExpenseCategoryDataType | undefined;
@@ -21,8 +23,88 @@ const ExpenseCategoryContext = createContext<ExpenseCategoryContextType | undefi
 export function ExpenseCategoryProvider({ children }: { children: ReactNode }) {
   const { user, setLoadingState } = useAuth();
   const { dek } = useDek();
+  const { lokiDB } = useLoki();
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryDataType>();
   const [sortedExpenseCategories, setSortedExpenseCategories] = useState<string[]>([]);
+  const collectionName = 'ExpenseCategory';
+  const [lokiCollection, setLokiCollection] = useState(lokiDB.getCollection(collectionName));
+
+  useEffect(() => {
+    if (!user || !dek) return;
+
+    const collectionName = 'ExpenseCategory';
+
+    // let lokiCollection = lokiDB.getCollection(collectionName);
+    if (!lokiCollection) {
+      setLokiCollection(lokiDB.addCollection(collectionName, { unique: ['id'] })); //Firestoreのidで一意に
+    }
+
+    const q = query(
+      collection(db, collectionName),
+      where('UserId', '==', user.uid),
+      limit(1)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach(async (change) => {
+        const doc = change.doc;
+        const data = doc.data();
+        const decrypted = await decryptData<ExpenseCategoryDataFromFirestoreType>(
+          base64ToArrayBuffer(data.EncryptedData), 
+          dek,
+          base64ToUint8Array(data.IV)
+        );
+        const lokiData = {
+          id: doc.id,
+          decrypted: decrypted
+        };
+        // console.log(lokiData);
+        // console.log(lokiCollection.find());
+
+        switch (change.type) {
+          case FSChangeType.ADDED:
+            if (!lokiCollection.findOne({ id: lokiData.id })) {
+              lokiCollection.insert(lokiData);
+            }
+            break;
+          case FSChangeType.MODIDIED:
+            lokiCollection.findAndRemove({ id: lokiData.id });
+            lokiCollection.insert(lokiData);
+            break;
+          case FSChangeType.REMOVED:
+            lokiCollection.findAndRemove({ id: lokiData.id });
+            break;
+        }
+      })
+    });
+
+    //ちゃんとクリーンアップ
+    return () => {
+      unsubscribe();
+    };
+  }, [user, dek, lokiCollection])
+
+  useEffect(() => {
+    if (!lokiCollection) return;
+
+    console.log(lokiCollection.find()[0]);
+
+    const listener = () => {
+      const data = lokiCollection.find()[0];
+      console.log(data);
+    }
+
+    lokiCollection.on('insert', listener);
+    lokiCollection.on('update', listener);
+    lokiCollection.on('delete', listener);
+
+    //クリーンアップ
+    return () => {
+      lokiCollection.removeListener('insert', listener);
+      lokiCollection.removeListener('update', listener);
+      lokiCollection.removeListener('delete', listener);
+    }
+  }, [lokiCollection])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,17 +183,15 @@ export function ExpenseCategoryProvider({ children }: { children: ReactNode }) {
       }
     ));
 
-    if (user) {
-      const { encrypted, iv } = await encryptData(rawExpenseCategories, dek);
+    const { encrypted, iv } = await encryptData(rawExpenseCategories, dek);
 
-      await addDoc(collection(db, 'ExpenseCategory'), {
-        UserId: uid,
-        IV: uint8ArrayToBase64(iv),
-        EncryptedData: arrayBufferToBase64(encrypted),
-        CreatedAt: new Date(),
-        UpdatedAt: new Date()
-      });
-    }
+    await addDoc(collection(db, 'ExpenseCategory'), {
+      UserId: uid,
+      IV: uint8ArrayToBase64(iv),
+      EncryptedData: arrayBufferToBase64(encrypted),
+      CreatedAt: new Date(),
+      UpdatedAt: new Date()
+    });
   }
 
   const updateExpenseCategories = async () => {

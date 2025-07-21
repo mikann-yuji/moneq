@@ -61,7 +61,7 @@ export default function FixedCostCategoryEditArea() {
 
   return (
     <>
-      <h2 className="text-lg font-semibold mb-4 mt-4">変動費</h2>
+      <h2 className="text-lg font-semibold mb-4 mt-4">固定費</h2>
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="fixedCostCategories">
           {(provided) => (

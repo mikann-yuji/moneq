@@ -101,17 +101,15 @@ export function IncomeCategoryProvider({ children }: { children: ReactNode }) {
       }
     ));
 
-    if (user) {
-      const { encrypted, iv } = await encryptData(rawIncomeCategories, dek);
+    const { encrypted, iv } = await encryptData(rawIncomeCategories, dek);
 
-      await addDoc(collection(db, 'IncomeCategory'), {
-        UserId: uid,
-        IV: uint8ArrayToBase64(iv),
-        EncryptedData: arrayBufferToBase64(encrypted),
-        CreatedAt: new Date(),
-        UpdatedAt: new Date()
-      });
-    }
+    await addDoc(collection(db, 'IncomeCategory'), {
+      UserId: uid,
+      IV: uint8ArrayToBase64(iv),
+      EncryptedData: arrayBufferToBase64(encrypted),
+      CreatedAt: new Date(),
+      UpdatedAt: new Date()
+    });
   }
   const updateIncomeCategories = async () => {
     if (dek && user && incomeCategories) {

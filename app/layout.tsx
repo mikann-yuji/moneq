@@ -1,18 +1,7 @@
+import { AppProviders } from "@/context/AppProviders";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ExpenseProvider } from "@/context/ExpenseContext";
-import { AuthProvider } from "@/context/AuthContext";
-import { DekProvider } from "@/context/DekContext";
-import { ExpenseCategoryProvider } from "@/context/ExpenseCategoryContext";
-import { FixedCostCategoryProvider } from "@/context/FixedCostCategoryContext";
-import { IncomeCategoryProvider } from "@/context/IncomeCategoryContext";
-import { FixedCostProvider } from "@/context/FixedCostContext";
-import { IncomeProvider } from "@/context/IncomeContext";
-import { ExpenseBudgetProvider } from "@/context/ExpenseBudgetContext";
-import { FixedCostBudgetProvider } from "@/context/FixedCostBudgetContext";
-import { IncomeBudgetProvider } from "@/context/IncomeBudgetContext";
-import { MemoProvider } from "@/context/MemoContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,31 +28,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <DekProvider>
-          <AuthProvider>
-            <ExpenseProvider>
-              <ExpenseCategoryProvider>
-                <FixedCostCategoryProvider>
-                  <IncomeCategoryProvider>
-                    <FixedCostProvider>
-                      <IncomeProvider>
-                        <ExpenseBudgetProvider>
-                          <FixedCostBudgetProvider>
-                            <IncomeBudgetProvider>
-                              <MemoProvider>
-                                {children}
-                              </MemoProvider>
-                            </IncomeBudgetProvider>
-                          </FixedCostBudgetProvider>
-                        </ExpenseBudgetProvider>
-                      </IncomeProvider>
-                    </FixedCostProvider>
-                  </IncomeCategoryProvider>
-                </FixedCostCategoryProvider>
-              </ExpenseCategoryProvider>
-            </ExpenseProvider>
-          </AuthProvider>
-        </DekProvider>
+        <AppProviders>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );
