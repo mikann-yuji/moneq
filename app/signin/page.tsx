@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { browserLocalPersistence, setPersistence, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useDek } from '@/context/DekContext';
 import { exportDek } from '@/utils/crypto';
@@ -18,13 +18,14 @@ export default function SingIn() {
     e.preventDefault();
     setLoading(true);
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       
       const uid = auth.currentUser?.uid;
       if (uid) {
         const dek = await getDek(uid, password);
         if (dek) {
-          sessionStorage.setItem("dek", await exportDek(dek));
+          localStorage.setItem("dek", await exportDek(dek));
           setDek(dek);
           router.push('/');
         } else {

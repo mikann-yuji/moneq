@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
 
       if (user) {
-        const rawDEK = sessionStorage.getItem("dek");
+        const rawDEK = localStorage.getItem("dek");
         if (rawDEK) {
           const dek = await importDek(rawDEK);
           setDek(dek);

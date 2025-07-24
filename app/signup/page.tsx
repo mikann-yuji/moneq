@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { browserLocalPersistence, createUserWithEmailAndPassword, setPersistence } from 'firebase/auth';
 import { generateSalt, deriveKEK, generateDEK, encryptDEK, exportDek } from '@/utils/crypto';
 import { doc } from 'firebase/firestore';
 import { setDoc } from 'firebase/firestore';
@@ -27,6 +27,7 @@ export default function SingUp() {
     e.preventDefault();
     setLoading(true);
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await createUserWithEmailAndPassword(auth, email, password);
       
       const uid = auth.currentUser?.uid;
@@ -40,7 +41,7 @@ export default function SingUp() {
           IV: uint8ArrayToBase64(iv),
           Salt: uint8ArrayToBase64(salt)
         });
-        sessionStorage.setItem("dek", await exportDek(dek));
+        localStorage.setItem("dek", await exportDek(dek));
         setDek(dek);
 
         // 最初のデフォルトカテゴリーをつくる
