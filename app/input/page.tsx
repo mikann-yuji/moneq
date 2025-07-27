@@ -176,7 +176,7 @@ export default function InputPage() {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-              <option value="">カテゴリを選択</option>
+              <option value="" disabled>カテゴリを選択</option>
               {sortedExpenseCategories.map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}

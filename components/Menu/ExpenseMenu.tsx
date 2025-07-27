@@ -1,6 +1,5 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import AmountInput from './AmountInput';
 import { Mode } from '@/constants/modes';
 import { ExpenseMenuMode } from '@/constants/expenseMenuModes';
@@ -14,7 +13,6 @@ interface ExpenseMenuProps {
 
 export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
   const [isActive, setIsActive] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [inputValue, setInputValue] = useState('');
   const [mode, setMode] = useState<Mode | null>(null);
   const [expenseMenuMode, setExpenseMenuMode] = useState<ExpenseMenuMode>(ExpenseMenuMode.DEFAULT);
@@ -42,11 +40,6 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
 
   const handleMenuClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMenuPosition({
-      top: rect.top,
-      left: rect.right + 8,
-    });
     setIsActive(!isActive);
     setExpenseMenuMode(ExpenseMenuMode.DEFAULT);
   };
@@ -89,15 +82,11 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
         </svg>
       </button>
       {isActive &&
-        createPortal(
+        (
           <div
             ref={menuRef}
-            style={{
-              position: 'fixed',
-              top: menuPosition.top,
-              left: menuPosition.left,
-            }}
-            className="w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200"
+            className="absolute top-full left-0 w-48 bg-white 
+              rounded-md shadow-lg z-20 border border-gray-200"
           >
             <div className="py-1">
               {expenseMenuMode === ExpenseMenuMode.INPUT ? (
@@ -155,8 +144,7 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
                 </div>
               )}
             </div>
-          </div>,
-          document.body
+          </div>
         )}
     </>
   );
