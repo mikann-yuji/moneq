@@ -30,17 +30,18 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
     };
 
     if (isActive) {
-      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isActive]);
 
   const handleMenuClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsActive(!isActive);
+    if (isActive) return;
+    setIsActive(true);
     setExpenseMenuMode(ExpenseMenuMode.DEFAULT);
   };
 
@@ -75,7 +76,7 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
     <>
       <button
         className="absolute right-0 top-0 h-full px-2 text-gray-500 hover:text-gray-700 cursor-pointer"
-        onClick={handleMenuClick}
+        onMouseDown={handleMenuClick}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
