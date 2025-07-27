@@ -189,7 +189,7 @@ export default function InputPage() {
               className="border rounded p-2 w-full"
               id="amount"
               onChange={(e) => {
-                let value = e.target.value.replace(/^0+/, '');
+                const value = e.target.value.replace(/^0+/, '');
                 setAmount(value);
               }}
               value={amount.toString()}
