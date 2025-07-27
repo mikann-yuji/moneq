@@ -11,7 +11,7 @@ import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
 import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
 
 export default function InputPage() {
-  const [amount, setAmount] = useState<number>(0);
+  const [amount, setAmount] = useState<number | string>('');
   const [category, setCategory] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
   const [now, setNow] = useState(new Date());
@@ -111,7 +111,8 @@ export default function InputPage() {
       const dataArray = await getExpenseData(q, dek);
       const data = dataArray.find(x => x.decryptedData.Category == category);
       const docId = data?.docId || '';
-      const totalAmount = amount + (data?.decryptedData.Amount || 0);
+      const amountNumber = Number(amount);
+      const totalAmount = amountNumber + (data?.decryptedData.Amount || 0);
       const detailArray: DetailType[] = [
         ...(data?.decryptedData.Details?.map(x => ({
           amount: x.Amount,
@@ -119,7 +120,7 @@ export default function InputPage() {
           time: x.Time
         })) || []),
         {
-          amount: amount,
+          amount: amountNumber,
           memo: memo,
           time: new Date()
         }
@@ -187,7 +188,10 @@ export default function InputPage() {
               placeholder="金額"
               className="border rounded p-2 w-full"
               id="amount"
-              onChange={(e) => setAmount(e.target.value ? parseInt(e.target.value) : 0)}
+              onChange={(e) => {
+                let value = e.target.value.replace(/^0+/, '');
+                setAmount(value);
+              }}
               value={amount.toString()}
             />
           </div>

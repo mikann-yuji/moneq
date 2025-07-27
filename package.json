@@ -19,7 +19,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-swipeable": "^7.0.2",
-    "swr": "^2.3.3"
+    "swr": "^2.3.3",
+    "xstate": "^5.20.1",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@egoist/tailwindcss-icons": "^1.9.0",
