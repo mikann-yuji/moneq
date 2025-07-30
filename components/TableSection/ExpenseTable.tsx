@@ -62,12 +62,12 @@ export default function ExpenseTable() {
   return (
     <div className="overflow-auto h-full">
       <table className="w-full">
-        <thead className="bg-green-200 sticky top-0 z-10">
+        <thead>
           <tr>
-            <th className="p-2"></th>
-            <th className="p-2"></th>
+            <th className="bg-green-200 p-2 sticky top-0 left-0 z-20"></th>
+            <th className="bg-green-200 p-2 sticky top-0 left-[33.8px] z-20 "></th>
             {headerCategories.map(category => (
-              <th key={category} className="p-2">
+              <th key={category} className="bg-green-200 p-2 sticky top-0 z-10">
                 {category}
               </th>
             ))}
@@ -80,10 +80,10 @@ export default function ExpenseTable() {
             
             return (
               <tr key={day}>
-                <td className="p-2 font-semibold bg-green-200 text-center">
+                <td className="p-2 font-semibold bg-green-200 text-center sticky left-0 z-10">
                   {day}
                 </td>
-                <td className="p-2 font-semibold bg-green-200 text-center">
+                <td className="p-2 font-semibold bg-green-200 text-center sticky left-[33.8px] z-10">
                   {weekday}
                 </td>
                 {headerCategories.map((category, catIndex) => (

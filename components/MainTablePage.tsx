@@ -23,7 +23,7 @@ export default function MainTablePage() {
 
   useEffect(() => {
     if (ref.current) {
-      setHeight(ref.current.offsetHeight ? `${ref.current.offsetHeight}px` : '100%');
+      setHeight(ref.current.offsetHeight ? `${ref.current.offsetHeight}px` : '100vh');
     }
   }, [user, sortedIncomeCategories, sortedFixedCostCategories]);
 
