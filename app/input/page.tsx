@@ -24,7 +24,10 @@ export default function InputPage() {
   const { expenseBudgetDatas } = useExpenseBudget();
   const { user } = useAuth();
   const { dek } = useDek();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+  /**
+   * 今月の最終日
+   */
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   useEffect(() => {
@@ -163,7 +166,7 @@ export default function InputPage() {
                 </div>
                 <div>{category}について残りの日数で一日当たりに使える金額</div>
                 <div className="text-xl font-bold">
-                  ￥{Math.floor(((expenseBudgetDatas[category]?.amount || 0) - totalCategoryExpense[category]) / (daysInMonth - now.getDate()))}
+                  ￥{Math.floor(((expenseBudgetDatas[category]?.amount || 0) - totalCategoryExpense[category]) / (daysInMonth - now.getDate() + 1))}
                 </div>
               </div>
             )

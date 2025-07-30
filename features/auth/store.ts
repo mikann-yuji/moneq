@@ -4,8 +4,8 @@ import { User } from 'firebase/auth';
 interface AuthState {
   user?: User;
   dek?: CryptoKey;
-  setUser: (user: User) => void;
-  setDek: (dek: CryptoKey) => void;
+  setUser: (user?: User) => void;
+  setDek: (dek?: CryptoKey) => void;
   clear: () => void;
 }
 

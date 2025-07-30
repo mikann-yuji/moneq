@@ -11,7 +11,9 @@
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
     "@heroicons/react": "^2.2.0",
+    "@xstate/react": "^6.0.0",
     "date-fns": "^4.1.0",
+    "dexie": "^4.0.11",
     "firebase": "^11.6.0",
     "lokijs": "^1.5.12",
     "next": "15.3.0",

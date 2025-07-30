@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         setDek(null);
-        sessionStorage.removeItem('dek');
+        localStorage.removeItem('dek');
         router.push('/signin');
       }
     });
