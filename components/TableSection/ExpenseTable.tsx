@@ -101,7 +101,7 @@ export default function ExpenseTable() {
             );
           })}
           <tr>
-            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center">
+            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center sticky left-0 z-10">
               合計
             </td>
             {headerCategories.map(category => (
@@ -115,7 +115,7 @@ export default function ExpenseTable() {
             ))}
           </tr>
           <tr>
-            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center">
+            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center sticky left-0 z-10">
               予算
             </td>
             {headerCategories.map(category => (
@@ -129,7 +129,7 @@ export default function ExpenseTable() {
             ))}
           </tr>
           <tr>
-            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center">
+            <td colSpan={2} className="p-2 font-semibold bg-green-200 text-center sticky left-0 z-10">
               残
             </td>
             {headerCategories.map(category => (
