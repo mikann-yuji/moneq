@@ -83,6 +83,7 @@ export default function InputPage() {
   
       const timeout = setTimeout(() => {
         setSelectDate(new Date()); // 0時ちょうどに現在時刻をセット
+        setNow(new Date());
         scheduleMidnightUpdate(); // 次の0時のために再スケジュール
       }, msUntilMidnight);
   
