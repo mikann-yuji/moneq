@@ -11,6 +11,7 @@ import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
 import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
 
 export default function InputPage() {
+  const [selectDate, setSelectDate] = useState<Date>(new Date());
   const [amount, setAmount] = useState<number | string>('');
   const [category, setCategory] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
@@ -66,32 +67,34 @@ export default function InputPage() {
   }, [totalCategoryExpense]);
 
   useEffect(() => {
-    const updateAtMidnight = () => {
-      const currentDate = new Date();
-      const currentDay = currentDate.getDate();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      
-      const previousDay = now.getDate();
-      const previousMonth = now.getMonth();
-      const previousYear = now.getFullYear();
-      
-      // 日付が変わった場合のみ更新
-      if (currentDay !== previousDay || 
-          currentMonth !== previousMonth || 
-          currentYear !== previousYear) {
-        setNow(currentDate);
-      }
+    const scheduleMidnightUpdate = () => {
+      // mount時の日付
+      const mountedDate = new Date();
+  
+      // 翌日0時のDateを作成
+      const midnight = new Date(
+        mountedDate.getFullYear(),
+        mountedDate.getMonth(),
+        mountedDate.getDate() + 1,
+        0, 0, 0, 0
+      );
+  
+      const msUntilMidnight = midnight.getTime() - mountedDate.getTime();
+  
+      const timeout = setTimeout(() => {
+        setSelectDate(new Date()); // 0時ちょうどに現在時刻をセット
+        scheduleMidnightUpdate(); // 次の0時のために再スケジュール
+      }, msUntilMidnight);
+  
+      return () => clearTimeout(timeout);
     };
-
-    // 初回実行
-    updateAtMidnight();
-
-    // 1分ごとにチェック
-    const interval = setInterval(updateAtMidnight, 60000);
-
-    return () => clearInterval(interval);
-  }, [now]);
+  
+    const cancel = scheduleMidnightUpdate();
+  
+    return () => {
+      cancel?.(); // クリーンアップ（初期化中止）
+    };
+  }, []);
 
   const handleSubmit = async () => {
     if (!category || amount === 0) {
@@ -99,10 +102,9 @@ export default function InputPage() {
       return;
     }
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const dayValue = now.getDate();
+    const year = selectDate.getFullYear();
+    const month = selectDate.getMonth() + 1;
+    const dayValue = selectDate.getDate();
     const pKey = `${year}-${month}-${dayValue}_${category}`;
     
     const q = query(
@@ -149,7 +151,7 @@ export default function InputPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
               </svg>
             </Link>
-            <h1 className="text-3xl font-bold flex-1 text-center">当日入力</h1>
+            <h1 className="text-3xl font-bold flex-1 text-center">入力</h1>
           </div>
           <div>
             変動費の予算 {totalExpenseBudget} - 
@@ -172,6 +174,18 @@ export default function InputPage() {
             )
           }
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+          <div className="mt-4">
+            <input
+              type="date"
+              className="border rounded p-2 w-full"
+              id="day"
+              value={selectDate.toISOString().slice(0, 10)}
+              onChange={(e) => {
+                const dateStr = e.target.value;
+                setSelectDate(new Date(dateStr));
+              }}
+            />
+          </div>
           <div className="mt-4">
             <select 
               className="border rounded p-2 w-full" 
