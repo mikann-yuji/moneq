@@ -154,7 +154,7 @@ export default function ExpenseTable() {
             </tr>
           </thead>
           <tbody>
-            {days.map((day, dayIndex) => {
+            {days.map((day) => {
               const date = new Date(selectedYear, selectedMonth - 1, day);
               const weekday = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
               
@@ -166,7 +166,7 @@ export default function ExpenseTable() {
                   <td className="p-2 font-semibold bg-green-200 text-center sticky left-[33.8px] z-10">
                     {weekday}
                   </td>
-                  {headerCategories.map((category, catIndex) => (
+                  {headerCategories.map((category) => (
                     <ExpenseInput
                       key={category}
                       isMemo={category === 'memo'}
