@@ -3,12 +3,12 @@
 import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
 import { useEffect, useState } from 'react';
 import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
-import ExpenseBudgetInput from '@/components/BudgetSection/ExpenseBudgetInput';
+import ExpenseBudgetInput from '@/app/budget/components/ExpenseBudgetInput';
 import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
 import { useIncomeCategory } from '@/context/IncomeCategoryContext';
 import { useFixedCostBudget } from '@/context/FixedCostBudgetContext';
-import FixedCostBudgetInput from '@/components/BudgetSection/FixedCostBudgetInput';
-import IncomeBudgetInput from '@/components/BudgetSection/IncomeBudgetInput';
+import FixedCostBudgetInput from '@/app/budget/components/FixedCostBudgetInput';
+import IncomeBudgetInput from '@/app/budget/components/IncomeBudgetInput';
 import { useIncomeBudget } from '@/context/IncomeBudgetContext';
 import Link from 'next/link';
 

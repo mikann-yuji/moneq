@@ -2,12 +2,12 @@
 'use client';
 
 import { useState } from 'react';
-import IncomeSection from '@/components/IncomeSection/IncomeTable';
-import FixedCostSection from '@/components/FixedCostSection/FixedCostTable';
-import ExpenseTable from '@/components/TableSection/ExpenseTable';
-import DateSelector from '@/components/DateSelector';
+import IncomeSection from '@/app/components/IncomeSection/IncomeTable';
+import FixedCostSection from '@/app/components/FixedCostSection/FixedCostTable';
+import ExpenseTable from '@/app/components/TableSection/ExpenseTable';
+import DateSelector from '@/app/components/DateSelector';
 import { useAuth } from '@/context/AuthContext';
-import HamburgerMenu from './HamburgerMenu';
+import HamburgerMenu from '../../components/HamburgerMenu';
 import SlideInPanel from './SlideInPanel';
 import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 

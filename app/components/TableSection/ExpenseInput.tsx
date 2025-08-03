@@ -1,7 +1,7 @@
 'use client';
 
 import { useExpense } from '@/context/ExpenseContext';
-import ExpenseMenu from '@/components/Menu/ExpenseMenu';
+import ExpenseMenu from '@/app/components/Menu/ExpenseMenu';
 import { inputStyle } from '@/styles/inputStyles';
 import MemoInput from './MemoInput';
 

@@ -1,5 +1,5 @@
 'use client';
-import MainTablePage from '@/components/MainTablePage';
+import MainTablePage from '@/app/components/MainTablePage';
 import { useAuth } from '@/context/AuthContext';
  
 export default function Home() {

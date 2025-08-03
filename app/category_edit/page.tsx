@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import ExpenseCategoryEditArea from '@/components/CategoryEditSection/ExpenseCategoryEditArea';
-import FixedCostCategoryEditArea from '@/components/CategoryEditSection/FixedCostCategoryEditArea';
-import IncomeCategoryEditArea from '@/components/CategoryEditSection/IncomeCategoryEditArea';
+import ExpenseCategoryEditArea from '@/app/category_edit/components/ExpenseCategoryEditArea';
+import FixedCostCategoryEditArea from '@/app/category_edit/components/FixedCostCategoryEditArea';
+import IncomeCategoryEditArea from '@/app/category_edit/components/IncomeCategoryEditArea';
 
 export default function CategoryEditPage() {
   return (
