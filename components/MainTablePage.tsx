@@ -38,7 +38,7 @@ export default function MainTablePage() {
         </div>
         <DateSelector />
         <div className="flex gap-4">
-          <div className="flex-[5] min-w-0" style={{ height: `${height}` }}>
+          <div className="flex-[5] min-w-0">
             {!loading && <ExpenseTable />}
           </div>
           <div ref={ref} className="flex-[1] space-y-4 hidden md:block">

@@ -40,13 +40,7 @@ export default function ExpenseInput({
   };
 
   return (
-    <td className={
-      `p-1 bg-white 
-      ${dayIndex === 0 && catIndex === 0 ? 'rounded-tl' : ''} 
-      ${dayIndex === 0 && catIndex === totalCategories - 1 ? 'rounded-tr' : ''} 
-      ${dayIndex === totalDays - 1 && catIndex === 0 ? 'rounded-bl' : ''} 
-      ${dayIndex === totalDays - 1 && catIndex === totalCategories - 1 ? 'rounded-br' : ''}`
-    }>
+    <td className="p-1 bg-white">
       <div className="relative">
         {
           isMemo 
