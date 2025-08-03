@@ -170,10 +170,6 @@ export default function ExpenseTable() {
                     <ExpenseInput
                       key={category}
                       isMemo={category === 'memo'}
-                      dayIndex={dayIndex}
-                      catIndex={catIndex}
-                      totalDays={daysInMonth}
-                      totalCategories={headerCategories.length}
                       pKey={`${selectedYear}-${selectedMonth}-${day}_${category}`} 
                     />
                   ))}

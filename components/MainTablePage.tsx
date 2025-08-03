@@ -1,31 +1,19 @@
 // app/page.tsx
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import IncomeSection from '@/components/IncomeSection/IncomeTable';
 import FixedCostSection from '@/components/FixedCostSection/FixedCostTable';
 import ExpenseTable from '@/components/TableSection/ExpenseTable';
 import DateSelector from '@/components/DateSelector';
 import { useAuth } from '@/context/AuthContext';
-import { useIncomeCategory } from '@/context/IncomeCategoryContext';
-import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
 import HamburgerMenu from './HamburgerMenu';
 import SlideInPanel from './SlideInPanel';
 import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 
 export default function MainTablePage() {
-  const [height, setHeight] = useState('0px');
-  const ref = useRef<HTMLDivElement>(null);
-  const { loading, user } = useAuth();
-  const { sortedIncomeCategories } = useIncomeCategory();
-  const { sortedFixedCostCategories } = useFixedCostCategory();
+  const { loading } = useAuth();
   const [showSlideInPanel, setShowSlideInPanel] = useState(false);
-
-  useEffect(() => {
-    if (ref.current) {
-      setHeight(ref.current.offsetHeight ? `${ref.current.offsetHeight}px` : '100vh');
-    }
-  }, [user, sortedIncomeCategories, sortedFixedCostCategories]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -41,7 +29,7 @@ export default function MainTablePage() {
           <div className="flex-[5] min-w-0">
             {!loading && <ExpenseTable />}
           </div>
-          <div ref={ref} className="flex-[1] space-y-4 hidden md:block">
+          <div className="flex-[1] space-y-4 hidden md:block">
             <IncomeSection />
             <FixedCostSection />
           </div>

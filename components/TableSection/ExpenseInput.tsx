@@ -7,19 +7,11 @@ import MemoInput from './MemoInput';
 
 interface ExpenseInputProps {
   isMemo: boolean;
-  dayIndex: number;
-  catIndex: number;
-  totalDays: number;
-  totalCategories: number;
   pKey: string;
 }
 
 export default function ExpenseInput({ 
   isMemo,
-  dayIndex,
-  catIndex,
-  totalDays,
-  totalCategories,
   pKey
 }: ExpenseInputProps) {
   const { expenseDatas, setExpenseData } = useExpense();
