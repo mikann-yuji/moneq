@@ -1,24 +1,31 @@
 'use client';
-import { useRef, useEffect, useState } from 'react';
-import AmountInput from './AmountInput';
-import { Mode } from '@/constants/modes';
+
 import { ExpenseMenuMode } from '@/constants/expenseMenuModes';
-import { format } from 'date-fns';
-import { useExpense } from '@/context/ExpenseContext';
+import { Mode } from '@/constants/modes';
+import { useCom } from '@/features/com/hooks';
+import { useLocalDBStore } from '@/localDB/store';
+import { CollectionNames } from '@/localDB/type';
+import { useEffect, useRef, useState } from 'react';
+import AmountInput from './AmountInput';
+import DetailTable from './DetailTable';
 
 interface ExpenseMenuProps {
   currentAmount: number;
-  pKey: string;
+  category: string;
+  day: number;
 }
 
-export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
+export default function ExpenseMenu({ currentAmount, category, day }: ExpenseMenuProps) {
   const [isActive, setIsActive] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [mode, setMode] = useState<Mode | null>(null);
   const [expenseMenuMode, setExpenseMenuMode] = useState<ExpenseMenuMode>(ExpenseMenuMode.DEFAULT);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { detailDatas } = useExpense();
+  const { createDateWithDay } = useCom();
 
+  const expenseData =  useLocalDBStore(state => state.collections[CollectionNames.Expenses].find(item => (
+    item.PlainText.Category === category && item.Date.getTime() === createDateWithDay(day).getTime()
+  )));
   const menuItemStyle = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer";
 
   useEffect(() => {
@@ -96,32 +103,12 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
                   onChange={handleInputChange}
                   onClose={handleClose}
                   currentAmount={currentAmount}
-                  pKey={pKey}
                   mode={mode}
+                  day={day}
+                  category={category}
                 />
               ) : expenseMenuMode === ExpenseMenuMode.DETAIL ? (
-                detailDatas[pKey]?.length > 0 && (
-                  <div className="mt-2">
-                    <table className="min-w-full">
-                    <thead>
-                      <tr>
-                        <th className="px-1 py-1 text-sm text-center">日付</th>
-                        <th className="px-1 py-1 text-sm text-center">金額</th>
-                        <th className="px-1 py-1 text-sm text-center">メモ</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detailDatas[pKey].map((detail, idx) => (
-                        <tr key={`${pKey}_${idx}`}>
-                          <td className="px-1 py-1 text-sm text-center">{format(detail.time, 'H:mm')}</td>
-                          <td className="px-1 py-1 text-sm text-center">{detail.amount}</td>
-                          <td className="px-1 py-1 text-sm text-center">{detail.memo}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  </div>
-                )
+                <DetailTable day={day} category={category} />
               ) : (
                 <div>
                   <button
@@ -139,6 +126,7 @@ export default function ExpenseMenu({ currentAmount, pKey }: ExpenseMenuProps) {
                   <button
                     className={menuItemStyle}
                     onClick={handleDetailClick}
+                    disabled={!expenseData?.PlainText.Details}
                   >
                     詳細
                   </button>

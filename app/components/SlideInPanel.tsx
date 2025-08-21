@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -9,7 +11,7 @@ interface SlideInPanelProps {
   title?: string;
 }
 
-const SlideInPanel: React.FC<SlideInPanelProps> = ({ isOpen, onClose, children, title }) => {
+export default function SlideInPanel({ isOpen, onClose, children, title }: SlideInPanelProps) {
   const handlers = useSwipeable({
     onSwipedLeft: onClose,
     trackTouch: true,
@@ -49,6 +51,4 @@ const SlideInPanel: React.FC<SlideInPanelProps> = ({ isOpen, onClose, children, 
       </div>
     </div>
   );
-};
-
-export default SlideInPanel; 
+}

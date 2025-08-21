@@ -1,8 +1,9 @@
 // app/page.tsx
 'use client';
+
+import { useAuth } from '@/features/auth/hooks';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect, useRef, useState } from 'react';
 
 export default function HamburgerMenu() {
   const [menuOpen, setMenuOpen] = useState(false);

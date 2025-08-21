@@ -1,9 +1,10 @@
 'use client';
-import { useExpense } from '@/context/ExpenseContext';
+
+import { useCom } from '@/features/com/hooks';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 export default function DateSelector() {
-  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useExpense();
+  const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useCom();
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -27,7 +28,6 @@ export default function DateSelector() {
 
   return (
     <div className="mb-6">
-      {/* デスクトップ表示 */}
       <div className="hidden md:flex gap-4">
         <select
           value={selectedYear}
@@ -43,7 +43,7 @@ export default function DateSelector() {
             <button
               key={month}
               onClick={() => setSelectedMonth(month)}
-              className={`px-4 py-2 rounded ${
+              className={`px-4 py-2 rounded cursor-pointer ${
                 selectedMonth === month
                   ? 'bg-green-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-green-100'

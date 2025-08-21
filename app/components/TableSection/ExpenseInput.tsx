@@ -1,34 +1,92 @@
 'use client';
 
-import { useExpense } from '@/context/ExpenseContext';
 import ExpenseMenu from '@/app/components/Menu/ExpenseMenu';
+import { useAuth } from '@/features/auth/hooks';
+import { useCom } from '@/features/com/hooks';
+import { useLocalDB } from '@/localDB/hooks';
+import { Expense } from '@/localDB/model/expense';
+import { useLocalDBStore } from '@/localDB/store';
+import { CollectionNames } from '@/localDB/type';
 import { inputStyle } from '@/styles/inputStyles';
 import MemoInput from './MemoInput';
+import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 
 interface ExpenseInputProps {
   isMemo: boolean;
-  pKey: string;
+  day: number;
+  category: string;
 }
 
 export default function ExpenseInput({ 
   isMemo,
-  pKey
+  day,
+  category,
 }: ExpenseInputProps) {
-  const { expenseDatas, setExpenseData } = useExpense();
+  const { putCollection, createDataWithID } = useLocalDB();
+  const { createDateWithDay } = useCom();
+  const { user, dek } = useAuth();
+
+  const router = useRouter();
+  const originalAmountRef = useRef<number | null>(null);
+  const date = createDateWithDay(day);
+  const expenseData = useLocalDBStore(state => state.collections[CollectionNames.Expenses].find(item => (
+    item.PlainText.Category === category && item.Date.getTime() === date.getTime()
+  )));
 
   const handleChange = (value: string) => {
-    const expenseData = expenseDatas[pKey]
     const amount = value ? parseInt(value) : 0;
-    const docId = expenseData?.docId || '';
-    setExpenseData(docId, pKey, amount);
+
+    if (dek && user) {
+      if (expenseData) {
+        const updateData: Expense = {
+          ...expenseData,
+          PlainText: {
+            ...expenseData.PlainText,
+            Amount: amount,
+          },
+          Synced: false,
+        }
+        putCollection(CollectionNames.Expenses, updateData, dek, user);
+      } else {
+        const createData = createDataWithID(
+          CollectionNames.Expenses,
+          {
+            PlainText: {
+              Amount: amount,
+              Category: category,
+            },
+            Date: date,
+            Synced: false,
+          }
+        );
+        putCollection(CollectionNames.Expenses, createData, dek, user);
+      }
+    } else {
+      router.push("/signin")
+    }
   };
 
-  const handleBlur = async (value: string) => {
-    const expenseData = expenseDatas[pKey]
+  const handleBlur = (value: string) => {
     const amount = value ? parseInt(value) : 0;
-    const docId = expenseData?.docId;
+    if (originalAmountRef.current !== null 
+      && originalAmountRef.current === amount) return;
 
-    setExpenseData(docId, pKey, amount);
+    if (dek && user) {
+      if (expenseData) {
+        const updateData: Expense = {
+          ...expenseData,
+          PlainText: {
+            ...expenseData.PlainText,
+            Amount: amount,
+          },
+          Synced: false,
+        }
+        putCollection(CollectionNames.Expenses, updateData, dek, user, true);
+      }
+    } else {
+      router.push("/signin")
+    }
   };
 
   return (
@@ -36,21 +94,26 @@ export default function ExpenseInput({
       <div className="relative">
         {
           isMemo 
-            ? <MemoInput pKey={pKey.split('_')[0]} />
+            ? <MemoInput day={day} />
             : (
               <>
                 <input
                   type='number'
                   className={`${inputStyle} w-30`}
                   placeholder='¥'
-                  value={(expenseDatas[pKey]?.amount || '').toString()}
+                  value={(expenseData?.PlainText.Amount || '').toString()}
                   onChange={(e) => handleChange(e.target.value)}
-                  onBlur={(e) => handleBlur(e.target.value)}
+                  onFocus={() => originalAmountRef.current = expenseData?.PlainText.Amount ?? 0}
+                  onBlur={(e) => { 
+                    handleBlur(e.target.value); 
+                    originalAmountRef.current = null; 
+                  }}
                 />
-                {expenseDatas[pKey]?.amount != 0 && expenseDatas[pKey]?.amount != undefined && (
+                {expenseData?.PlainText.Amount != 0 && expenseData?.PlainText.Amount != undefined && (
                   <ExpenseMenu
-                    currentAmount={expenseDatas[pKey].amount || 0}
-                    pKey={pKey}
+                    currentAmount={expenseData.PlainText.Amount || 0}
+                    day={day}
+                    category={category}
                   />
                 )}
               </>

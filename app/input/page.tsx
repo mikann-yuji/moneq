@@ -1,17 +1,20 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, where, query } from 'firebase/firestore';
+
+import { useAuth } from '@/features/auth/hooks';
+import { useSortCategory } from '@/hooks/useSortCategory';
+import { firestore } from '@/lib/firebase';
+import { useLocalDB } from '@/localDB/hooks';
+import { Expense } from '@/localDB/model/expense';
+import { useLocalDBStore } from '@/localDB/store';
+import { CollectionNames } from '@/localDB/type';
+import { dateToYMD } from '@/utils/dateUtil';
+import { collection, query, where } from 'firebase/firestore';
 import Link from 'next/link';
-import { useExpense } from '@/context/ExpenseContext';
-import { useAuth } from '@/context/AuthContext';
-import { useDek } from '@/context/DekContext';
-import { DetailType } from '@/types/expenseType';
-import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
-import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function InputPage() {
-  const [selectDate, setSelectDate] = useState<Date>(new Date());
+  const [selectDate, setSelectDate] = useState<Date>(dateToYMD(new Date()));
   const [amount, setAmount] = useState<number | string>('');
   const [category, setCategory] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
@@ -20,42 +23,46 @@ export default function InputPage() {
   const [totalExpense, setTotalExpense] = useState<number>(0);
   const [totalCategoryExpense, setTotalCategoryExpense] = useState<{ [key: string]: number }>({});
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { sortedExpenseCategories } = useExpenseCategory();
-  const { setDetailDataArray, expenseDatas, setExpenseData, getExpenseData, getAndSetExpenseData } = useExpense();
-  const { expenseBudgetDatas } = useExpenseBudget();
-  const { user } = useAuth();
-  const { dek } = useDek();
-  /**
-   * 今月の最終日
-   */
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const { user, dek } = useAuth();
+  const { syncFromFirestore, putCollection, createDataWithID } = useLocalDB();
+
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const days = Array.from({ length: lastDayOfMonth }, (_, i) => i + 1);
+  const expenseBudgetDatas = useLocalDBStore(state => state.collections[CollectionNames.ExpenseBudgets]);
+  const expenseDatas = useLocalDBStore(state => state.collections[CollectionNames.Expenses]);
+  const router = useRouter();
+  const sortedExpenseCategories = useSortCategory(CollectionNames.ExpenseCategory);
 
   useEffect(() => {
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const expenseQ = query(
-      collection(db, 'Expenses'),
-      where('Date', '>=', startDate),
-      where('Date', '<=', endDate),
-      where('UserId', '==', user?.uid || '')
-    );
-
-    if (dek) {
-      getAndSetExpenseData(expenseQ, dek);
+    const fetchData = async () => {
+      if (dek && user) {
+        const q = query(
+          collection(firestore, 'Expenses'),
+          where('Date', '==', selectDate),
+          where('UserId', '==', user.uid)
+        );
+    
+        await syncFromFirestore(q, dek, CollectionNames.Expenses);
+      }
     }
-  }, [dek]);
+    
+    fetchData();
+  }, [selectDate, dek, user]);
 
   useEffect(() => {
     setTotalExpenseBudget(
       sortedExpenseCategories.reduce((sum, category) => {
-        return sum + (expenseBudgetDatas[category]?.amount || 0)
+        return sum + (expenseBudgetDatas.find(item => (
+          item.PlainText.Category == category))?.PlainText.Amount || 0)
       }, 0)
     );
     sortedExpenseCategories.forEach(category => {
       const total = days.reduce((sum, day) => {
-        const pKey = `${now.getFullYear()}-${now.getMonth() + 1}-${day}_${category}`;
-        return sum + (expenseDatas[pKey]?.amount || 0);
+        return sum + (expenseDatas.find(item => (
+          item.PlainText.Category == category 
+          && item.Date == new Date(selectDate.getFullYear(), selectDate.getMonth() - 1, day)
+        ))?.PlainText.Amount || 0);
       }, 0);
       setTotalCategoryExpense(prev => ({...prev, [category]: total}));
     });
@@ -82,7 +89,7 @@ export default function InputPage() {
       const msUntilMidnight = midnight.getTime() - mountedDate.getTime();
   
       const timeout = setTimeout(() => {
-        setSelectDate(new Date()); // 0時ちょうどに現在時刻をセット
+        setSelectDate(dateToYMD(new Date())); // 0時ちょうどに現在時刻をセット
         setNow(new Date());
         scheduleMidnightUpdate(); // 次の0時のために再スケジュール
       }, msUntilMidnight);
@@ -103,37 +110,52 @@ export default function InputPage() {
       return;
     }
 
-    const year = selectDate.getFullYear();
-    const month = selectDate.getMonth() + 1;
-    const dayValue = selectDate.getDate();
-    const pKey = `${year}-${month}-${dayValue}_${category}`;
-    
-    const q = query(
-      collection(db, 'Expenses'),
-      where('Date', '==', new Date(year, month - 1, dayValue)),
-      where('UserId', '==', user?.uid || '')
-    );
-    if (dek) {
-      const dataArray = await getExpenseData(q, dek);
-      const data = dataArray.find(x => x.decryptedData.Category == category);
-      const docId = data?.docId || '';
-      const amountNumber = Number(amount);
-      const totalAmount = amountNumber + (data?.decryptedData.Amount || 0);
-      const detailArray: DetailType[] = [
-        ...(data?.decryptedData.Details?.map(x => ({
-          amount: x.Amount,
-          memo: x.Memo,
-          time: x.Time
-        })) || []),
-        {
-          amount: amountNumber,
-          memo: memo,
-          time: new Date()
+    const expenseData = expenseDatas.find(item => (
+      item.Date.getTime() === selectDate.getTime() 
+      && item.PlainText.Category === category
+    ));
+    const amountNumber = Number(amount);
+    const totalAmount = amountNumber + (expenseData?.PlainText.Amount || 0);
+    if (dek && user) {
+      if (expenseData) {
+        const updateData: Expense = {
+          ...expenseData,
+          PlainText: {
+            ...expenseData.PlainText,
+            Amount: totalAmount,
+            Details: [
+              ...expenseData.PlainText.Details || [],
+              {
+                Amount: amountNumber,
+                Memo: memo,
+                Time: new Date()
+              }
+            ]
+          },
+          Synced: false
         }
-      ];
-    
-      setExpenseData(docId, pKey, totalAmount);
-      setDetailDataArray(pKey, detailArray);
+        putCollection(CollectionNames.Expenses, updateData, dek, user, true);
+      } else {
+        const createData = createDataWithID(
+          CollectionNames.Expenses,
+          {
+            PlainText: {
+              Amount: totalAmount,
+              Category: category,
+              Details: [{
+                Amount: amountNumber,
+                Memo: memo,
+                Time: new Date()
+              }]
+            },
+            Date: selectDate,
+            Synced: false
+          }
+        );
+        putCollection(CollectionNames.Expenses, createData, dek, user, true);
+      }
+    } else {
+      router.push("/signin");
     }
 
     setErrorMessage('');
@@ -163,13 +185,18 @@ export default function InputPage() {
             category && (
               <div>
                 <div>
-                  {category}の予算 {expenseBudgetDatas[category]?.amount || 0} - 
-                  {category}の合計 {totalCategoryExpense[category]} = 
-                  残 <span className="text-lg font-bold">{(expenseBudgetDatas[category]?.amount || 0) - totalCategoryExpense[category]}</span>
+                  {category}の予算 {expenseBudgetDatas.find(item => item.PlainText.Category === category)?.PlainText.Amount || 0} - 
+                  {category}の合計 {totalCategoryExpense[category] || 0} = 
+                  残 <span className="text-lg font-bold">{
+                    (expenseBudgetDatas.find(item => item.PlainText.Category === category)?.PlainText.Amount || 0) 
+                    - (totalCategoryExpense[category] || 0)
+                  }</span>
                 </div>
                 <div>{category}について残りの日数で一日当たりに使える金額</div>
                 <div className="text-xl font-bold">
-                  ￥{Math.floor(((expenseBudgetDatas[category]?.amount || 0) - totalCategoryExpense[category]) / (daysInMonth - now.getDate() + 1))}
+                  ￥{Math.floor(((
+                    expenseBudgetDatas.find(item => item.PlainText.Category === category)?.PlainText.Amount || 0
+                  ) - (totalCategoryExpense[category] || 0)) / (lastDayOfMonth - now.getDate() + 1))}
                 </div>
               </div>
             )
@@ -180,10 +207,14 @@ export default function InputPage() {
               type="date"
               className="border rounded p-2 w-full"
               id="day"
-              value={selectDate.toISOString().slice(0, 10)}
+              value={selectDate.toLocaleDateString("ja-JP", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+              }).replace(/\//g, "-")}
               onChange={(e) => {
                 const dateStr = e.target.value;
-                setSelectDate(new Date(dateStr));
+                setSelectDate(dateToYMD(new Date(dateStr)));
               }}
             />
           </div>

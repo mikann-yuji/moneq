@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import ExpenseCategoryEditArea from '@/app/category_edit/components/ExpenseCategoryEditArea';
-import FixedCostCategoryEditArea from '@/app/category_edit/components/FixedCostCategoryEditArea';
-import IncomeCategoryEditArea from '@/app/category_edit/components/IncomeCategoryEditArea';
+import CategoryEditArea from './components/CategoryEditArea';
+import { CollectionNames } from '@/localDB/type';
 
 export default function CategoryEditPage() {
   return (
@@ -16,11 +15,20 @@ export default function CategoryEditPage() {
         </Link>
         <h1 className="text-3xl font-bold flex-1 text-center">カテゴリー編集</h1>
       </div>
-      <ExpenseCategoryEditArea />
+      <CategoryEditArea
+        collectionName={CollectionNames.ExpenseCategory}
+        title="変動費"
+      />
       <div className="mt-8 pt-4 border-t"></div>
-      <FixedCostCategoryEditArea />
+      <CategoryEditArea
+        collectionName={CollectionNames.FixedCostCategory}
+        title="固定費"
+      />
       <div className="mt-8 pt-4 border-t"></div>
-      <IncomeCategoryEditArea />
+      <CategoryEditArea
+        collectionName={CollectionNames.IncomeCategory}
+        title="収入"
+      />
     </div>
   );
 } 

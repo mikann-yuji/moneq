@@ -1,18 +1,17 @@
-// app/page.tsx
 'use client';
 
-import { useState } from 'react';
-import IncomeSection from '@/app/components/IncomeSection/IncomeTable';
-import FixedCostSection from '@/app/components/FixedCostSection/FixedCostTable';
-import ExpenseTable from '@/app/components/TableSection/ExpenseTable';
 import DateSelector from '@/app/components/DateSelector';
-import { useAuth } from '@/context/AuthContext';
-import HamburgerMenu from '../../components/HamburgerMenu';
-import SlideInPanel from './SlideInPanel';
+import ExpenseTable from '@/app/components/TableSection/ExpenseTable';
+import { useCom } from '@/features/com/hooks';
+import { CollectionNames } from '@/localDB/type';
 import { ChevronLeftIcon } from '@heroicons/react/16/solid';
+import { useState } from 'react';
+import HamburgerMenu from '../../components/HamburgerMenu';
+import SideTable from './SideSection/SideTable';
+import SlideInPanel from './SlideInPanel';
 
 export default function MainTablePage() {
-  const { loading } = useAuth();
+  const { isInitLoading } = useCom();
   const [showSlideInPanel, setShowSlideInPanel] = useState(false);
 
   return (
@@ -27,11 +26,21 @@ export default function MainTablePage() {
         <DateSelector />
         <div className="flex gap-4">
           <div className="flex-[5] min-w-0">
-            {!loading && <ExpenseTable />}
+            {!isInitLoading && <ExpenseTable />}
           </div>
           <div className="flex-[1] space-y-4 hidden md:block">
-            <IncomeSection />
-            <FixedCostSection />
+            <SideTable
+              title="収入"
+              collectionName={CollectionNames.Incomes}
+              collectionCategoryName={CollectionNames.IncomeCategory}
+              collectionBudgetName={CollectionNames.IncomeBudgets}
+            />
+            <SideTable
+              title="固定費"
+              collectionName={CollectionNames.FixedCosts}
+              collectionCategoryName={CollectionNames.FixedCostCategory}
+              collectionBudgetName={CollectionNames.FixedCostBudgets}
+            />
           </div>
         </div>
         {!showSlideInPanel && (
@@ -50,9 +59,19 @@ export default function MainTablePage() {
           onClose={() => setShowSlideInPanel(false)}
           title=""
         >
-          <IncomeSection />
+          <SideTable
+            title="収入"
+            collectionName={CollectionNames.Incomes}
+            collectionCategoryName={CollectionNames.IncomeCategory}
+            collectionBudgetName={CollectionNames.IncomeBudgets}
+          />
           <div className="h-4"></div>
-          <FixedCostSection />
+          <SideTable
+            title="固定費"
+            collectionName={CollectionNames.FixedCosts}
+            collectionCategoryName={CollectionNames.FixedCostCategory}
+            collectionBudgetName={CollectionNames.FixedCostBudgets}
+          />
         </SlideInPanel>
       </main>
     </div>

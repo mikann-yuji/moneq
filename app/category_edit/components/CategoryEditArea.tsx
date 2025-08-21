@@ -1,18 +1,62 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { ExpenseCategoriesDataType } from '@/types/expenseType';
+import { useLocalDB } from '@/localDB/hooks';
+import { CollectionNames } from '@/localDB/type';
+import { useAuth } from '@/features/auth/hooks';
+import { useLocalDBStore } from '@/localDB/store';
+import { useRouter } from 'next/navigation';
+import { useSortCategory } from '@/hooks/useSortCategory';
 
-export default function ExpenseCategoryEditArea() {
-  const { sortedExpenseCategories, setExpenseCategory } = useExpenseCategory();
+type CategoryEditAreaProps<
+  K extends CollectionNames.ExpenseCategory
+  | CollectionNames.FixedCostCategory 
+  | CollectionNames.IncomeCategory
+> = {
+  collectionName: K;
+  title: string;
+};
+
+export default function CategoryEditArea<
+  K extends CollectionNames.ExpenseCategory
+  | CollectionNames.FixedCostCategory
+  | CollectionNames.IncomeCategory
+>({
+  collectionName,
+  title,
+}: CategoryEditAreaProps<K>) {
   const [tmpCategories, setTmpCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState('');
+  const { putCollection } = useLocalDB();
+  const { user, dek } = useAuth();
+
+  const router = useRouter();
+  const categoryCollection = useLocalDBStore(state => state.collections[collectionName]);
+  const sortedCategories = useSortCategory(collectionName);
 
   useEffect(() => {
-    setTmpCategories(sortedExpenseCategories);
-  }, [sortedExpenseCategories]);
+    setTmpCategories(sortedCategories);
+  }, [sortedCategories]);
+
+  const updateCategories = (items: string[]) => {
+    const updatedCategories = items.map((item, idx) => (
+      {
+        Category: item,
+        OrderNo: idx + 1
+      }
+    ));
+    const updateData = {
+      ...categoryCollection[0],
+      PlainText: updatedCategories,
+      Synced: false,
+    }
+    if (dek && user) {
+      putCollection(collectionName, updateData, dek, user, true);
+    } else {
+      router.push("/signin");
+    }
+  }
 
   const handleOnDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -20,27 +64,15 @@ export default function ExpenseCategoryEditArea() {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    const updated: ExpenseCategoriesDataType = items.map((item, idx) => (
-      {
-        category: item,
-        orderNo: idx + 1
-      }
-    ));
     setTmpCategories(items);
-    setExpenseCategory(updated);
+    updateCategories(items);
   };
 
   const handleDelete = (category: string) => {
     const items = tmpCategories.filter(elem => elem !== category);
 
-    const updated: ExpenseCategoriesDataType = items.map((item, idx) => (
-      {
-        category: item,
-        orderNo: idx + 1
-      }
-    ));
     setTmpCategories(items);
-    setExpenseCategory(updated);
+    updateCategories(items);
   }
 
   const handleAddCategory = () => {
@@ -48,20 +80,15 @@ export default function ExpenseCategoryEditArea() {
     if (!value) return;
     if (tmpCategories.includes(value)) return;
     const items = [...tmpCategories, value];
-    const updated: ExpenseCategoriesDataType = items.map((item, idx) => (
-      {
-        category: item,
-        orderNo: idx + 1
-      }
-    ));
+    
     setTmpCategories(items);
-    setExpenseCategory(updated);
+    updateCategories(items);
     setNewCategory('');
   };
 
   return (
     <>
-      <h2 className="text-lg font-semibold mb-4 mt-4">変動費</h2>
+      <h2 className="text-lg font-semibold mb-4 mt-4">{title}</h2>
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="expenseCategories">
           {(provided) => (

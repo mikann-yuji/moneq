@@ -1,20 +1,36 @@
 'use client';
+
 import { useRef, useEffect } from 'react';
-import { useExpense } from '@/context/ExpenseContext';
 import { Mode } from '@/constants/modes';
+import { useLocalDB } from '@/localDB/hooks';
+import { CollectionNames } from '@/localDB/type';
+import { useCom } from '@/features/com/hooks';
+import { useAuth } from '@/features/auth/hooks';
+import { Expense } from '@/localDB/model/expense';
+import { useLocalDBStore } from '@/localDB/store';
+import { useRouter } from 'next/navigation';
 
 interface AmountInputProps {
   value: string;
   onChange: (value: string) => void;
   onClose: () => void;
   currentAmount: number;
-  pKey: string;
   mode: Mode | null;
+  category: string;
+  day: number;
 }
 
-export default function AmountInput({ value, onChange, onClose, currentAmount, pKey, mode }: AmountInputProps) {
+export default function AmountInput({ value, onChange, onClose, currentAmount, mode, category, day }: AmountInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { setExpenseData, expenseDatas } = useExpense();
+  const { putCollection, createDataWithID } = useLocalDB();
+  const { createDateWithDay } = useCom();
+  const { dek, user } = useAuth();
+
+  const router = useRouter();
+  const date = createDateWithDay(day);
+  const expenseData = useLocalDBStore(state => state.collections[CollectionNames.Expenses].find(item => (
+    item.PlainText.Category === category && item.Date.getTime() === createDateWithDay(day).getTime()
+  )));
 
   useEffect(() => {
     if (inputRef.current) {
@@ -25,24 +41,45 @@ export default function AmountInput({ value, onChange, onClose, currentAmount, p
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     
-    try {
-      const newAmount = parseInt(value) || 0;
-      let totalAmount = currentAmount;
+    const newAmount = parseInt(value) || 0;
+    let totalAmount = currentAmount;
 
-      if (mode === Mode.ADD) {
-        totalAmount += newAmount;
-      } else if (mode === Mode.SUBTRACT) {
-        totalAmount -= newAmount;
-      }
-      const expenseData = expenseDatas[pKey]
-      const docId = expenseData?.docId;
-
-      setExpenseData(docId, pKey, totalAmount);
-      console.log('金額を更新しました:', totalAmount);
-      onClose();
-    } catch (error) {
-      console.error('金額の更新に失敗しました:', error);
+    if (mode === Mode.ADD) {
+      totalAmount += newAmount;
+    } else if (mode === Mode.SUBTRACT) {
+      totalAmount -= newAmount;
     }
+    console.log(totalAmount);
+    
+    if (dek && user) {
+      if (expenseData) {
+        const updateData: Expense = {
+          ...expenseData,
+          PlainText: {
+            ...expenseData.PlainText,
+            Amount: totalAmount,
+          },
+          Synced: false,
+        }
+        putCollection(CollectionNames.Expenses, updateData, dek, user, true);
+      } else {
+        const createData = createDataWithID(
+          CollectionNames.Expenses,
+          {
+            PlainText: {
+              Amount: totalAmount,
+              Category: category,
+            },
+            Date: date,
+            Synced: false,
+          }
+        );
+        putCollection(CollectionNames.Expenses, createData, dek, user, true);
+      }
+    } else {
+      router.push("/signin");
+    }
+    onClose();
   };
 
   return (

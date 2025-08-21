@@ -1,18 +1,24 @@
 'use client';
-import { useState } from 'react';
+
+import { useAuth } from '@/features/auth/hooks';
+import { useCom } from '@/features/com/hooks';
 import { auth } from '@/lib/firebase';
-import { browserLocalPersistence, setPersistence, signInWithEmailAndPassword } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
-import { useDek } from '@/context/DekContext';
+import { localDB } from '@/localDB';
 import { exportDek } from '@/utils/crypto';
+import { browserLocalPersistence, setPersistence, signInWithEmailAndPassword } from 'firebase/auth';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function SingIn() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const { setDek, getDek } = useDek();
+
+  const { loadUserInfo } = useCom();
+  const { getDek, setDek } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,12 +27,18 @@ export default function SingIn() {
       await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       
-      const uid = auth.currentUser?.uid;
-      if (uid) {
-        const dek = await getDek(uid, password);
+      const user = auth.currentUser;
+      if (user) {
+        const dek = await getDek(user.uid, password);
         if (dek) {
-          localStorage.setItem("dek", await exportDek(dek));
+          const rawDek = await exportDek(dek);
+          await localDB.Dek.add({ id: 'dek', Dek: rawDek });
           setDek(dek);
+          await loadUserInfo(user, () => {
+            if (pathname && pathname !== "/signup") {
+              router.push("/signin");
+            }
+          });
           router.push('/');
         } else {
           setError("DEKの取得に失敗しました。");

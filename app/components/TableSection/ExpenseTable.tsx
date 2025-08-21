@@ -1,31 +1,34 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useExpense } from '@/context/ExpenseContext';
-import ExpenseInput from './ExpenseInput';
+
+import { useAuth } from '@/features/auth/hooks';
+import { useCom } from '@/features/com/hooks';
+import { firestore } from '@/lib/firebase';
+import { useLocalDB } from '@/localDB/hooks';
+import { useLocalDBStore } from '@/localDB/store';
+import { CollectionNames } from '@/localDB/type';
 import { collection, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
-import { useDek } from '@/context/DekContext';
-import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
-import { useExpenseBudget } from '@/context/ExpenseBudgetContext';
-import { useExpenseMemo } from '@/context/MemoContext';
+import { useEffect, useRef, useState } from 'react';
+import ExpenseInput from './ExpenseInput';
+import { useSortCategory } from '@/hooks/useSortCategory';
 
 export default function ExpenseTable() {
-  const { selectedYear, selectedMonth, getAndSetExpenseData, expenseDatas } = useExpense();
-  const { getAndSetMemoData } = useExpenseMemo();
-  const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const { user } = useAuth();
-  const { dek } = useDek();
-  const { sortedExpenseCategories } = useExpenseCategory();
-  const headerCategories = [...sortedExpenseCategories, 'memo'];
-  const { expenseBudgetDatas } = useExpenseBudget();
+  const { selectedYear, selectedMonth, createDateWithDay } = useCom();
+  const { user, dek } = useAuth();
+  const { syncFromFirestore } = useLocalDB();
+
   const [totalCategoryExpense, setTotalCategoryExpense] = useState<{ [key: string]: number }>({});
-  const tableRef = useRef<HTMLTableSectionElement>(null);
   const [showFixedHeader, setShowFixedHeader] = useState(false);
   const [theadWidth, setTheadWidth] = useState(0);
+
+  const tableRef = useRef<HTMLTableSectionElement>(null);
   const fixedHeaderRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  
+  const headerCategories = useSortCategory(CollectionNames.ExpenseCategory, ["memo"]);
+  const expenseCollection = useLocalDBStore(state => state.collections[CollectionNames.Expenses]);
+  const expenseBudgetCollection = useLocalDBStore(state => state.collections[CollectionNames.ExpenseBudgets]);
+  const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   // テーブルヘッダーの上端固定
   useEffect(() => {
@@ -77,9 +80,14 @@ export default function ExpenseTable() {
       }
     };
 
-    scrollContainerRef.current?.addEventListener("scroll", onScroll);
-    return () =>
-      scrollContainerRef.current?.removeEventListener("scroll", onScroll);
+    const container = scrollContainerRef.current;
+    container?.addEventListener("scroll", onScroll);
+
+    if (showFixedHeader && container && fixedHeaderRef.current) {
+      fixedHeaderRef.current.scrollLeft = container.scrollLeft;
+    }
+
+    return () => container?.removeEventListener("scroll", onScroll);
   }, [showFixedHeader]);
 
   useEffect(() => {
@@ -87,42 +95,45 @@ export default function ExpenseTable() {
       const startDate = new Date(selectedYear, selectedMonth - 1, 1);
       const endDate = new Date(selectedYear, selectedMonth, 0);
       
-      const expensesQ = query(
-        collection(db, 'Expenses'),
-        where('Date', '>=', startDate),
-        where('Date', '<=', endDate),
-        where('UserId', '==', user?.uid || '')
-      );
-      const memoQ = query(
-        collection(db, 'Memos'),
-        where('Date', '>=', startDate),
-        where('Date', '<=', endDate),
-        where('UserId', '==', user?.uid || '')
-      );
+      if (dek && user) {
+        const expensesQ = query(
+          collection(firestore, 'Expenses'),
+          where('Date', '>=', startDate),
+          where('Date', '<=', endDate),
+          where('UserId', '==', user.uid)
+        );
+        const memoQ = query(
+          collection(firestore, 'Memos'),
+          where('Date', '>=', startDate),
+          where('Date', '<=', endDate),
+          where('UserId', '==', user.uid)
+        );
 
-      if (dek) {
-        getAndSetExpenseData(expensesQ, dek);
-        getAndSetMemoData(memoQ, dek);
+        await syncFromFirestore(expensesQ, dek, CollectionNames.Expenses);
+        await syncFromFirestore(memoQ, dek, CollectionNames.Memos);
       }
     }
 
     fetchData();
-  }, [selectedYear, selectedMonth, dek]);
+  }, [selectedYear, selectedMonth, dek, user]);
 
   useEffect(() => {
     headerCategories.forEach(category => {
       const total = days.reduce((sum, day) => {
-        const pKey = `${selectedYear}-${selectedMonth}-${day}_${category}`;
-        return sum + (expenseDatas[pKey]?.amount || 0);
+        return sum + (
+          expenseCollection.find(item => (
+            item.PlainText.Category === category && item.Date.getTime() === createDateWithDay(day).getTime()
+          ))?.PlainText.Amount || 0
+        );
       }, 0);
       setTotalCategoryExpense(prev => ({...prev, [category]: total}));
     });
-  }, [expenseDatas]);
+  }, [expenseCollection]);
 
   return (
     <div className="relative h-min-full">
       {showFixedHeader && (
-        <div className="fixed top-0 bg-white shadow z-30" style={{ width: theadWidth }}>
+        <div className="fixed top-0 bg-white shadow z-30" style={{ maxWidth: theadWidth }}>
           <div ref={fixedHeaderRef} className="overflow-x-auto scrollbar-hide">
             <table className="table-fixed min-w-max">
               <thead>
@@ -170,7 +181,8 @@ export default function ExpenseTable() {
                     <ExpenseInput
                       key={category}
                       isMemo={category === 'memo'}
-                      pKey={`${selectedYear}-${selectedMonth}-${day}_${category}`} 
+                      category={category}
+                      day={day}
                     />
                   ))}
                 </tr>
@@ -199,7 +211,8 @@ export default function ExpenseTable() {
                   ? (<td key={category} className="p-2 font-semibold bg-gray-200"></td>)
                   : (
                       <td key={category} className="p-2 font-semibold bg-green-200">
-                        {(expenseBudgetDatas[category]?.amount || '-').toLocaleString()}円
+                        {(expenseBudgetCollection.find(
+                          item => item.PlainText.Category == category)?.PlainText.Amount || '-').toLocaleString()}円
                       </td>
                     )
               ))}
@@ -213,7 +226,13 @@ export default function ExpenseTable() {
                   ? (<td key={category} className="p-2 font-semibold bg-gray-200"></td>)
                   : (
                       <td key={category} className="p-2 font-semibold bg-green-200">
-                        {((expenseBudgetDatas[category]?.amount - totalCategoryExpense[category]) || '-').toLocaleString()}円
+                        {(() => {
+                          const amount = expenseBudgetCollection.find(
+                            item => item.PlainText.Category == category)?.PlainText.Amount;
+                          return typeof amount === "number"
+                            ? (amount - totalCategoryExpense[category]).toLocaleString() + "円"
+                            : "-";
+                        })()}
                       </td>
                     )
               ))}

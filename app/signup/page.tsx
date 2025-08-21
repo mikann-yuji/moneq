@@ -1,27 +1,27 @@
 'use client';
-import { useState } from 'react';
-import { auth, db } from '@/lib/firebase';
+
+import { firstExpenseCategories, firstFixedCostCategories, firstIncomeCategories } from '@/constants/category';
+import { useAuth } from '@/features/auth/hooks';
+import { auth, firestore } from '@/lib/firebase';
+import { localDB } from '@/localDB';
+import { useLocalDB } from '@/localDB/hooks';
+import { CollectionNames } from '@/localDB/type';
+import { arrayBufferToBase64, deriveKEK, encryptDEK, exportDek, generateDEK, generateSalt, uint8ArrayToBase64 } from '@/utils/crypto';
 import { browserLocalPersistence, createUserWithEmailAndPassword, setPersistence } from 'firebase/auth';
-import { generateSalt, deriveKEK, generateDEK, encryptDEK, exportDek } from '@/utils/crypto';
-import { doc } from 'firebase/firestore';
-import { setDoc } from 'firebase/firestore';
-import { useDek } from '@/context/DekContext';
-import { arrayBufferToBase64, uint8ArrayToBase64 } from '@/utils/crypto';
+import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { useExpenseCategory } from '@/context/ExpenseCategoryContext';
-import { useIncomeCategory } from '@/context/IncomeCategoryContext';
-import { useFixedCostCategory } from '@/context/FixedCostCategoryContext';
+import { useState } from 'react';
 
 export default function SingUp() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const { setDek } = useDek();
+
+  const { createFirstCategories } = useLocalDB();
+  const { setDek } = useAuth();
+
   const router = useRouter();
-  const { createFirstExpenseCategories } = useExpenseCategory();
-  const { createFirstIncomeCategories } = useIncomeCategory();
-  const { createFirstFixedCostCategories } = useFixedCostCategory();
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,24 +30,31 @@ export default function SingUp() {
       await setPersistence(auth, browserLocalPersistence);
       await createUserWithEmailAndPassword(auth, email, password);
       
-      const uid = auth.currentUser?.uid;
-      if (uid) {
+      const user = auth.currentUser;
+      if (user) {
         const salt = generateSalt();
         const kek = await deriveKEK(password, salt);
         const dek = await generateDEK();
         const { encryptedDEK, iv } = await encryptDEK(dek, kek);
-        await setDoc(doc(db, "UserKeys", uid), {
+        await setDoc(doc(firestore, "UserKeys", user.uid), {
           EncryptedDek: arrayBufferToBase64(encryptedDEK as ArrayBuffer), // Firestore用に配列に変換
           IV: uint8ArrayToBase64(iv),
           Salt: uint8ArrayToBase64(salt)
         });
-        localStorage.setItem("dek", await exportDek(dek));
+        const rawDek = await exportDek(dek);
+        await localDB.Dek.put({ id: 'dek', Dek: rawDek });
         setDek(dek);
 
         // 最初のデフォルトカテゴリーをつくる
-        await createFirstExpenseCategories(uid, dek);
-        await createFirstIncomeCategories(uid, dek);
-        await createFirstFixedCostCategories(uid, dek);
+        await createFirstCategories(
+          CollectionNames.ExpenseCategory, dek, user, firstExpenseCategories
+        );
+        await createFirstCategories(
+          CollectionNames.FixedCostCategory, dek, user, firstFixedCostCategories
+        );
+        await createFirstCategories(
+          CollectionNames.IncomeCategory, dek, user, firstIncomeCategories
+        );
 
         router.push('/');
       }
