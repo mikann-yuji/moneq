@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CollectionNames } from '@/localDB/type';
 import BudgetInput from './components/BudgetInput';
@@ -13,7 +13,6 @@ export default function BudgetPage() {
   const [totalFixedCostBudget, setTotalFixedCostBudget] = useState<number>(0);
   const [totalIncomeBudget, setTotalIncomeBudget] = useState<number>(0);
 
-  const nodeRef = useRef<HTMLDivElement>(null);
   const sortedExpenseCategories = useSortCategory(CollectionNames.ExpenseCategory);
   const sortedFixedCostCategories = useSortCategory(CollectionNames.FixedCostCategory);
   const sortedIncomeCategories = useSortCategory(CollectionNames.IncomeCategory);
