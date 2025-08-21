@@ -123,13 +123,18 @@ export default function ExpenseMenu({ currentAmount, category, day }: ExpenseMen
                   >
                     金額を引く
                   </button>
-                  <button
-                    className={menuItemStyle}
-                    onClick={handleDetailClick}
-                    disabled={!expenseData?.PlainText.Details}
-                  >
-                    詳細
-                  </button>
+                  {
+                    expenseData?.PlainText.Details 
+                    && expenseData.PlainText.Details.length > 0 && (
+                      <button
+                        className={menuItemStyle}
+                        onClick={handleDetailClick}
+                      >
+                        詳細
+                      </button>
+                    )
+                  }
+                  
                 </div>
               )}
             </div>
