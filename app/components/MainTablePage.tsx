@@ -13,12 +13,31 @@ import SlideInPanel from './SlideInPanel';
 export default function MainTablePage() {
   const { isInitLoading } = useCom();
   const [showSlideInPanel, setShowSlideInPanel] = useState(false);
+  const [isInputTop, setIsInputTop] = useState(localStorage.getItem("isInputTop") === "true")
+
+  const handleChange = (checked: boolean) => {
+    localStorage.setItem("isInputTop", String(checked));
+    setIsInputTop(checked);
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="container mx-auto px-4 py-8 max-w-[95%] bg-green-50 text-gray-900">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold">家計簿</h1>
+          <h1 className="text-3xl font-bold">
+            家計簿
+            <label className="inline-flex items-center cursor-pointer ml-5">
+              <input 
+                type="checkbox" 
+                value=""
+                className="sr-only peer"
+                checked={isInputTop}
+                onChange={(e) => handleChange(e.target.checked)}
+              />
+              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+              <span className="ms-3 text-sm font-medium text-gray-900">入力ページをトップにする</span>
+            </label>
+          </h1>
           <div className="relative">
             <HamburgerMenu />
           </div>

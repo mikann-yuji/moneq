@@ -2,9 +2,24 @@
 
 import MainTablePage from '@/app/components/MainTablePage';
 import { useCom } from '@/features/com/hooks';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
  
 export default function Home() {
-  const { isInitLoading } = useCom();
+  const { isInitLoading } = useCom(); 
+  const router = useRouter();
+
+  useEffect(() => {
+    const isInputTop = localStorage.getItem("isInputTop");
+    const hasVisited = sessionStorage.getItem("hasVisited");
+
+    if (!hasVisited && isInputTop === "true") {
+      // 初回訪問 → フラグをセット
+      sessionStorage.setItem("hasVisited", "true");
+      // /input にリダイレクト
+      router.replace("/input");
+    }
+  }, [router]);
 
   return (
     <div className="relative">
