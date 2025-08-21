@@ -27,6 +27,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="https://progressier.app/hbOmIxZqhhp0eWVpzZNb/progressier.json"/>
+        <script defer src="https://progressier.app/hbOmIxZqhhp0eWVpzZNb/script.js"></script> 
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

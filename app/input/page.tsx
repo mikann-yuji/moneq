@@ -202,10 +202,10 @@ export default function InputPage() {
             )
           }
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-          <div className="mt-4">
+          <div className="mt-4 min-w-0">
             <input
               type="date"
-              className="border rounded p-2 w-full"
+              className="border rounded p-2 w-full min-w-0 max-w-full"
               id="day"
               value={selectDate.toLocaleDateString("ja-JP", {
                 year: "numeric",
