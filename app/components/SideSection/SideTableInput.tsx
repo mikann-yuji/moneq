@@ -48,10 +48,10 @@ export default function SideTableInput<
           },
           Synced: false,
         }
-        putCollection(CollectionNames.Incomes, updateData, dek, user);
+        putCollection(collectionName, updateData, dek, user);
       } else {
-        const createData = createDataWithID(
-          CollectionNames.Incomes,
+        const createData = createDataWithID<CollectionNames.FixedCosts | CollectionNames.Incomes>(
+          collectionName,
           {
             PlainText: {
               Amount: amount,
@@ -61,7 +61,7 @@ export default function SideTableInput<
             Synced: false,
           }
         );
-        putCollection(CollectionNames.Incomes, createData, dek, user);
+        putCollection(collectionName, createData, dek, user);
       }
     } else {
       router.push("/signin");
@@ -75,7 +75,7 @@ export default function SideTableInput<
 
     if (dek && user) {
       if (amountData) {
-        const updateData: Income = {
+        const updateData = {
           ...amountData,
           PlainText: {
             ...amountData.PlainText,
@@ -83,7 +83,7 @@ export default function SideTableInput<
           },
           Synced: false,
         }
-        putCollection(CollectionNames.Incomes, updateData, dek, user, true);
+        putCollection(collectionName, updateData, dek, user, true);
       }
     } else {
       router.push("/signin");
