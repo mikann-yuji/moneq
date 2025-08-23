@@ -30,9 +30,10 @@ export const useLocalDB = () => {
     // ローカルDBに一括保存
     const table = localDB.table<CollectionMap[K], string>(collectionName);
     await table.bulkPut(dataArray);
+    const tableName = await table.toArray();
   
     // zustandを更新
-    setCollection(collectionName, (prev) => mergeById(prev, dataArray));
+    setCollection(collectionName, (prev) => mergeById(prev, tableName));
   }
   
   async function putCollection<

@@ -36,10 +36,14 @@ export default function InputPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      const startDate = new Date(selectDate.getFullYear(), selectDate.getMonth(), 1);
+      const endDate = new Date(selectDate.getFullYear(), selectDate.getMonth() + 1, 0);
+
       if (dek && user) {
         const q = query(
           collection(firestore, 'Expenses'),
-          where('Date', '==', selectDate),
+          where('Date', '>=', startDate),
+          where('Date', '<=', endDate),
           where('UserId', '==', user.uid)
         );
     
@@ -59,14 +63,14 @@ export default function InputPage() {
     );
     sortedExpenseCategories.forEach(category => {
       const total = days.reduce((sum, day) => {
-        return sum + (expenseDatas.find(item => (
-          item.PlainText.Category == category 
-          && item.Date == new Date(selectDate.getFullYear(), selectDate.getMonth() - 1, day)
-        ))?.PlainText.Amount || 0);
+        return sum + (expenseDatas.find(item => {
+          return item.PlainText.Category === category 
+            && item.Date.getTime() === new Date(selectDate.getFullYear(), selectDate.getMonth(), day).getTime()
+      })?.PlainText.Amount || 0);
       }, 0);
       setTotalCategoryExpense(prev => ({...prev, [category]: total}));
     });
-  }, [expenseBudgetDatas, expenseDatas]);
+  }, [expenseBudgetDatas, expenseDatas, sortedExpenseCategories]);
 
   useEffect(() => {
     const allTotal = Object.values(totalCategoryExpense).reduce((total, value) => total + value, 0);
