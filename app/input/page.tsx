@@ -164,7 +164,7 @@ export default function InputPage() {
 
     setErrorMessage('');
     setCategory('');
-    setAmount(0);
+    setAmount('');
     setMemo('');
   };
 
