@@ -70,13 +70,21 @@ export default function ExpenseTable() {
 
   // テーブルヘッダーのスクロール同期
   useEffect(() => {
+    let ticking = false;
+
     const onScroll = () => {
-      if (
-        scrollContainerRef.current &&
-        fixedHeaderRef.current &&
-        showFixedHeader
-      ) {
-        fixedHeaderRef.current.scrollLeft = scrollContainerRef.current.scrollLeft;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (
+            scrollContainerRef.current &&
+            fixedHeaderRef.current &&
+            showFixedHeader
+          ) {
+            fixedHeaderRef.current.scrollLeft = scrollContainerRef.current.scrollLeft;
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
