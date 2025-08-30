@@ -3,40 +3,15 @@
 import { useCom } from '@/features/com/hooks';
 import { useSortCategory } from '@/hooks/useSortCategory';
 import { useLocalDBStore } from '@/localDB/store';
-import { CollectionMap, CollectionNames } from '@/localDB/type';
+import { CollectionNames } from '@/localDB/type';
 import { inputStyle } from '@/styles/inputStyles';
 import { useEffect, useState } from 'react';
-
-const useChangeBudgetCollection = (
-  categoryCollection: string[], 
-  budgetCollection: CollectionMap[CollectionNames.ExpenseBudgets][]
-    | CollectionMap[CollectionNames.FixedCostBudgets][]
-    | CollectionMap[CollectionNames.IncomeBudgets][],
-  collectionName: string,
-  callback: (updater: (prev: Record<string, number>) => Record<string, number>) => void
-) => {
-  useEffect(() => {
-    const tmpTotal = categoryCollection.reduce((sum, category) => {
-      return sum + (
-        budgetCollection.find(item => (
-          item.PlainText.Category === category
-        ))?.PlainText.Amount || 0
-      )
-    }, 0);
-    callback(prev => ({ ...prev, [collectionName]: tmpTotal }))
-  }, [budgetCollection, categoryCollection]);
-}
 
 export default function SideTotalTable() {
   const [total, setTotal] = useState<Record<string, number>>({
     [CollectionNames.Expenses]: 0,
     [CollectionNames.FixedCosts]: 0,
     [CollectionNames.Incomes]: 0
-  });
-  const [totalBudget, setTotalBudget] = useState<Record<string, number>>({
-    [CollectionNames.ExpenseBudgets]: 0,
-    [CollectionNames.FixedCostBudgets]: 0,
-    [CollectionNames.IncomeBudgets]: 0
   });
 
   const { createDateWithDay, createDateWithoutDay, selectedYear, selectedMonth } = useCom();
@@ -46,9 +21,6 @@ export default function SideTotalTable() {
   const expenseCollection = useLocalDBStore(state => state.collections[CollectionNames.Expenses]);
   const fixedCostCollection = useLocalDBStore(state => state.collections[CollectionNames.FixedCosts]);
   const incomeCollection = useLocalDBStore(state => state.collections[CollectionNames.Incomes]);
-  const expenseBudgetCollection = useLocalDBStore(state => state.collections[CollectionNames.ExpenseBudgets]);
-  const fixedCostBudgetCollection = useLocalDBStore(state => state.collections[CollectionNames.FixedCostBudgets]);
-  const incomeBudgetCollection = useLocalDBStore(state => state.collections[CollectionNames.IncomeBudgets]);
   const expenseCategoryCollection = useSortCategory(CollectionNames.ExpenseCategory);
   const fixedCostCategoryCollection = useSortCategory(CollectionNames.FixedCostCategory);
   const incomeCategoryCollection = useSortCategory(CollectionNames.IncomeCategory);
@@ -91,13 +63,6 @@ export default function SideTotalTable() {
     }, 0);
     setTotal(prev => ({ ...prev, [CollectionNames.Incomes]: tmpTotal }));
   }, [incomeCollection, incomeCategoryCollection]);
-
-  useChangeBudgetCollection(expenseCategoryCollection, expenseBudgetCollection, 
-    CollectionNames.ExpenseBudgets, setTotalBudget);
-  useChangeBudgetCollection(fixedCostCategoryCollection, fixedCostBudgetCollection, 
-    CollectionNames.FixedCostBudgets, setTotalBudget);
-  useChangeBudgetCollection(incomeCategoryCollection, incomeBudgetCollection, 
-    CollectionNames.IncomeBudgets, setTotalBudget);
   
   return (
     <div className="bg-white rounded-lg p-4 shadow h-fit">
