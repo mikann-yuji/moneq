@@ -81,12 +81,14 @@ export default function MainTablePage() {
           title=""
         >
           <SideTotalTable />
+          <div className="h-2" />
           <SideTable
             title="収入"
             collectionName={CollectionNames.Incomes}
             collectionCategoryName={CollectionNames.IncomeCategory}
             collectionBudgetName={CollectionNames.IncomeBudgets}
           />
+          <div className="h-2" />
           <SideTable
             title="固定費"
             collectionName={CollectionNames.FixedCosts}

@@ -132,22 +132,21 @@ export default function SideTotalTable() {
         </div>
         <div className="pt-4 border-t">
           <div className="flex justify-between items-center mb-2">
-            <span className="font-medium">総合計</span>
+            <span className="font-medium">支出</span>
             <span className="font-bold">
-              ¥{Object.values(total).reduce((sum, value) => sum + value, 0).toLocaleString()}
+              ¥{(total[CollectionNames.Expenses] + total[CollectionNames.FixedCosts]).toLocaleString()}
             </span>
           </div>
           <div className="flex justify-between items-center mb-2">
-            <span className="font-medium">総予算</span>
+            <span className="font-medium">収入</span>
             <span className="font-bold">
-              ¥{Object.values(totalBudget).reduce((sum, value) => sum + value, 0).toLocaleString()}
+              ¥{total[CollectionNames.Incomes].toLocaleString()}
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="font-medium">総残</span>
+            <span className="font-medium">収支</span>
             <span className="font-bold">
-            ¥{(Object.values(totalBudget).reduce((sum, value) => sum + value, 0) - 
-              Object.values(total).reduce((sum, value) => sum + value, 0)).toLocaleString()}
+            ¥{(total[CollectionNames.Incomes] - (total[CollectionNames.Expenses] + total[CollectionNames.FixedCosts])).toLocaleString()}
             </span>
           </div>
         </div>
