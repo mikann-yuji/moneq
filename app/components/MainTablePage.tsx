@@ -8,6 +8,7 @@ import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 import { useState } from 'react';
 import HamburgerMenu from '../../components/HamburgerMenu';
 import SideTable from './SideSection/SideTable';
+import SideTotalTable from './SideSection/SideTotalTable';
 import SlideInPanel from './SlideInPanel';
 
 export default function MainTablePage() {
@@ -48,6 +49,7 @@ export default function MainTablePage() {
             {!isInitLoading && <ExpenseTable />}
           </div>
           <div className="flex-[1] space-y-4 hidden md:block">
+            <SideTotalTable />
             <SideTable
               title="収入"
               collectionName={CollectionNames.Incomes}
@@ -78,13 +80,13 @@ export default function MainTablePage() {
           onClose={() => setShowSlideInPanel(false)}
           title=""
         >
+          <SideTotalTable />
           <SideTable
             title="収入"
             collectionName={CollectionNames.Incomes}
             collectionCategoryName={CollectionNames.IncomeCategory}
             collectionBudgetName={CollectionNames.IncomeBudgets}
           />
-          <div className="h-4"></div>
           <SideTable
             title="固定費"
             collectionName={CollectionNames.FixedCosts}
