@@ -3,13 +3,9 @@ import { User } from "firebase/auth";
 import { collection, doc, getDocs, Query } from "firebase/firestore";
 import { localDB } from ".";
 import { mergeById, startSyncLoop } from "./helpers";
-import { ExpenseCategory } from "./model/expenseCategory";
-import { FixedCostCategory } from "./model/fixedCostCategory";
-import { IncomeCategory } from "./model/incomeCategory";
 import { useLocalDBStore } from "./store";
 import { CollectionMap, CollectionNames } from "./type";
 import { transformers } from "./transformer";
-import { useEffect, useState } from "react";
 
 export const useLocalDB = () => {
   const { setCollection } = useLocalDBStore();

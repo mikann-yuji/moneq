@@ -1,5 +1,3 @@
-'use client';
-
 import { useAuthStore } from './store';
 import { signOut } from 'firebase/auth';
 import { base64ToArrayBuffer, base64ToUint8Array, decryptDEK, deriveKEK } from '@/utils/crypto';

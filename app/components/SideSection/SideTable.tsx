@@ -56,13 +56,28 @@ export default function SideTable<
 
       if (dek && user) {
         const q = query(
-          collection(firestore, 'Incomes'),
+          collection(firestore, collectionName),
           where('Date', '>=', startDate),
           where('Date', '<=', endDate),
           where('UserId', '==', user.uid)
         );
 
-        syncFromFirestore(q, dek, CollectionNames.Incomes);
+        syncFromFirestore(q, dek, collectionName);
+
+        if (collectionName === CollectionNames.FixedCosts) {
+          // 前月の範囲
+          const startDatePrev = new Date(selectedYear, selectedMonth - 2, 1);
+          const endDatePrev = new Date(selectedYear, selectedMonth - 1, 0);
+
+          const q = query(
+            collection(firestore, collectionName),
+            where('Date', '>=', startDatePrev),
+            where('Date', '<=', endDatePrev),
+            where('UserId', '==', user.uid)
+          );
+  
+          syncFromFirestore(q, dek, collectionName);
+        }
       }
     }
 

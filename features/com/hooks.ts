@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { useComStore } from "./store";
 import { User } from "firebase/auth";
 import { useAuth } from "../auth/hooks";
@@ -82,6 +81,10 @@ export const useCom = () => {
     return new Date(selectedYear, selectedMonth - 1);
   }
 
+  const createPrevMonthDateWithoutDay = () => {
+    return new Date(selectedYear, selectedMonth - 2);
+  }
+
   return {
     loadUserInfo,
     isInitLoading,
@@ -91,6 +94,7 @@ export const useCom = () => {
     selectedMonth,
     setSelectedMonth,
     createDateWithDay,
-    createDateWithoutDay
+    createDateWithoutDay,
+    createPrevMonthDateWithoutDay
   }
 }

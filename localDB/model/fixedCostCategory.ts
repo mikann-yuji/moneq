@@ -7,4 +7,5 @@ export interface FixedCostCategory extends ComLocalDBType {
 type FixedCostCategoryPlainType = {
   Category: string;
   OrderNo: number;
+  CarryOver?: boolean;
 }
